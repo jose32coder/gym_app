@@ -1,65 +1,39 @@
-# Miscellaneous
-*.class
+# System files
+.DS_Store
+*.swp
 *.log
 *.pyc
-*.swp
-.DS_Store
-.atom/
-.buildlog/
-.history
-.svn/
-migrate_working_dir/
+*.class
 
-# IntelliJ related
+# IDE / Editor settings
+.idea/
 *.iml
 *.ipr
 *.iws
-.idea/
+.atom/
+.vscode/
+.history/
 
-# VS Code (opcional, descomenta si no quieres subir tu config personal)
-#.vscode/
-
-# Flutter/Dart/Pub related
+# Build / Generated files
+/build/
+**/doc/api/
+**/ios/Flutter/.last_build_id
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
-.packages
 .pub-cache/
 .pub/
-build/
-**/doc/api/
-**/ios/Flutter/.last_build_id
-**/android/.gradle/
-**/android/app/debug/
-**/android/app/profile/
-**/android/app/release/
+migrate_working_dir/
+.buildlog/
 
-# Obfuscation and Symbolication
+# Version control
+.svn/
+
+# Flutter / Dart / Android specific
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# Symbolication / Obfuscation
 app.*.symbols
 app.*.map.json
-
-# Generated plugin registrant files (cambian según builds)
-**/generated_plugin_registrant.*
-**/generated_plugins.cmake
-**/GeneratedPluginRegistrant.*
-
-# CXX build artifacts (carpetas generadas por Android NDK builds)
-**/android/app/.cxx/
-
-# Lock file (opcional, si no quieres subirlo)
-# pubspec.lock
-
-# macOS generated files
-.DS_Store
-
-# Windows generated files
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-
-# Linux generated files
-*~
-
-# Personal backup files
-*.bak
-*.tmp
