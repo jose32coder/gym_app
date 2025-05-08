@@ -1,0 +1,2 @@
+C:/Users/josem/OneDrive/Escritorio/Flutter/basic_flutter/android/app/.cxx/Debug/4305r5v3/x86_64/CMakeFiles/edit_cache.dir
+C:/Users/josem/OneDrive/Escritorio/Flutter/basic_flutter/android/app/.cxx/Debug/4305r5v3/x86_64/CMakeFiles/rebuild_cache.dir
