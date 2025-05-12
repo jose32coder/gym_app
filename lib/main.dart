@@ -19,7 +19,6 @@ class MainApp extends StatelessWidget {
         colorScheme: ColorScheme.light(
           primary: Colors.lightBlue.shade700,
           secondary: Colors.lightBlue.shade300,
-          background: const Color(0xFFF5F5F5),
           surface: Colors.white,
         ),
         scaffoldBackgroundColor: const Color(0xFFF5F5F5),
@@ -37,13 +36,13 @@ class MainApp extends StatelessWidget {
         navigationBarTheme: NavigationBarThemeData(
           backgroundColor: Colors.white,
           indicatorColor: Colors.lightBlue.shade100,
-          iconTheme: MaterialStateProperty.resolveWith((states) {
-            if (states.contains(MaterialState.selected)) {
+          iconTheme: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) {
               return IconThemeData(color: Colors.lightBlue.shade700);
             }
             return const IconThemeData(color: Colors.grey);
           }),
-          labelTextStyle: MaterialStateProperty.all(
+          labelTextStyle: WidgetStateProperty.all(
             const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
           ),
         ),
@@ -65,7 +64,6 @@ class MainApp extends StatelessWidget {
         colorScheme: ColorScheme.dark(
           primary: Colors.blueGrey.shade300,
           secondary: Colors.lightBlueAccent.shade100,
-          background: const Color(0xFF121212),
           surface: const Color(0xFF1E1E1E),
         ),
         scaffoldBackgroundColor: const Color(0xFF121212),
@@ -83,13 +81,13 @@ class MainApp extends StatelessWidget {
         navigationBarTheme: NavigationBarThemeData(
           backgroundColor: const Color(0xFF1E1E1E),
           indicatorColor: Colors.blueGrey.shade900,
-          iconTheme: MaterialStateProperty.resolveWith((states) {
-            if (states.contains(MaterialState.selected)) {
+          iconTheme: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) {
               return IconThemeData(color: Colors.lightBlueAccent.shade100);
             }
             return const IconThemeData(color: Colors.grey);
           }),
-          labelTextStyle: MaterialStateProperty.all(
+          labelTextStyle: WidgetStateProperty.all(
             const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
           ),
         ),

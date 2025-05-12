@@ -1,0 +1,2 @@
+C:/flutter/gym_app/android/app/.cxx/Debug/i5sw365m/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/flutter/gym_app/android/app/.cxx/Debug/i5sw365m/armeabi-v7a/CMakeFiles/rebuild_cache.dir

@@ -29,7 +29,7 @@ class WelcomeMessage extends StatelessWidget {
       child: Column(
         children: [
           Text(
-            '👋 Bienvenido, Alberto',
+            '👋 Bienvenido, User',
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,

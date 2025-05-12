@@ -3,14 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:basic_flutter/components/image_selector.dart';
 import 'package:basic_flutter/components/textformfield.dart';
 
-class AddPersons extends StatefulWidget {
-  const AddPersons({super.key});
+class AddPersons extends StatelessWidget {
+  final bool showMembresia;
+  const AddPersons({super.key, required this.showMembresia});
+  
 
-  @override
-  State<AddPersons> createState() => _addPersonsState();
-}
-
-class _addPersonsState extends State<AddPersons> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,14 +25,15 @@ class _addPersonsState extends State<AddPersons> {
           )
         ],
       ),
-      body: const SingleChildScrollView(
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Imageselector(),
-            SizedBox(height: 30),
-            TextFormPage(), // ahora todo con scroll si hace falta
+            const Imageselector(),
+            const SizedBox(height: 30),
+            TextFormPage(showMembresia: showMembresia),
+             // ahora todo con scroll si hace falta
           ],
         ),
       ),

@@ -1,0 +1,1 @@
+C:\flutter\gym_app\build\app\intermediates\cxx\Debug\i5sw365m\obj\arm64-v8a

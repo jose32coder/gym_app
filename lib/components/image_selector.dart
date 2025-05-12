@@ -12,19 +12,19 @@ class Imageselector extends StatefulWidget {
 class _ImageselectorState extends State<Imageselector> {
   @override
   Widget build(BuildContext context) {
-    File? _imageFile;
+    File? imageFile;
 
-    final ImagePicker _picker = ImagePicker();
+    final ImagePicker picker = ImagePicker();
 
-    Future<void> _pickImage() async {
-      final XFile? pickedImage = await _picker.pickImage(
+    Future<void> pickImage() async {
+      final XFile? pickedImage = await picker.pickImage(
         source: ImageSource.gallery,
         imageQuality: 80,
       );
 
       if (pickedImage != null) {
         setState(() {
-          _imageFile = File(pickedImage.path);
+          imageFile = File(pickedImage.path);
         });
       }
     }
@@ -54,13 +54,13 @@ class _ImageselectorState extends State<Imageselector> {
                 child: SizedBox(
                   width: 180,
                   height: 180,
-                  child: _imageFile != null
+                  child: imageFile != null
                       ? Transform.translate(
                           offset: const Offset(
                               0, 0), // mueve X e Y (positivo = derecha/abajo)
                           child: FittedBox(
                             fit: BoxFit.cover,
-                            child: Image.file(_imageFile!),
+                            child: Image.file(imageFile!),
                           ),
                         )
                       : Transform(
@@ -81,7 +81,7 @@ class _ImageselectorState extends State<Imageselector> {
             bottom: 0,
             right: 4,
             child: GestureDetector(
-              onTap: _pickImage,
+              onTap: pickImage,
               child: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
