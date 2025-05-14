@@ -13,7 +13,7 @@ class AdminMember extends StatelessWidget {
             FocusScope.of(context).unfocus();
             Navigator.pop(context);
           },
-          icon: Icon(Icons.arrow_back_ios),
+          icon: const Icon(Icons.arrow_back_ios),
         ),
         title: Text('Membresías', style: TextStyles.boldText(context)),
         centerTitle: true,
@@ -24,7 +24,7 @@ class AdminMember extends StatelessWidget {
           )
         ],
       ),
-      body: Center(
+      body: const Center(
         child: Text('Membresías generales'),
       ),
     );

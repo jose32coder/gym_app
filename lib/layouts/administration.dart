@@ -1,4 +1,5 @@
 import 'package:basic_flutter/components/admin_cards.dart';
+import 'package:basic_flutter/components/text_style.dart';
 import 'package:basic_flutter/layouts/adminViews/admin_assis.dart';
 import 'package:basic_flutter/layouts/adminViews/admin_member.dart';
 import 'package:basic_flutter/layouts/adminViews/admin_pay.dart';
@@ -16,7 +17,7 @@ class Administration extends StatelessWidget {
         //   padding: EdgeInsets.only(left: 10),
         //   child: Icon(Icons.arrow_back, size: 32),
         // ),
-        title: const Text('Administración'),
+        title: Text('Administración', style: TextStyles.boldText(context),),
         centerTitle: false,
         actions: const [
           Padding(
@@ -41,7 +42,7 @@ class Administration extends StatelessWidget {
                     MaterialPageRoute(builder: (context) => const AdminPer()));
                 },
               ),
-              SizedBox(height: 10,),
+              const SizedBox(height: 10,),
               AdminCard(
                 title: 'Membresías',
                 subtitle: 'Listado de membresías del gimnasio',
@@ -52,7 +53,7 @@ class Administration extends StatelessWidget {
                     MaterialPageRoute(builder: (context) => const AdminMember()));
                 },
               ),
-              SizedBox(height: 10,),
+              const SizedBox(height: 10,),
               AdminCard(
                 title: 'Asistencias',
                 subtitle: 'Listado de asistencias generales',
@@ -63,7 +64,7 @@ class Administration extends StatelessWidget {
                     MaterialPageRoute(builder: (context) => const AdminAssis()));
                 },
               ),
-              SizedBox(height: 10,),
+              const SizedBox(height: 10,),
               AdminCard(
                 title: 'Pagos',
                 subtitle: 'Administración de pagos generales',

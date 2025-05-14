@@ -153,9 +153,10 @@ class _TextFormPageState extends State<TextFormPage> {
                     borderRadius: BorderRadius.circular(10))),
             child: Text(
               'Registrar',
-              style: TextStyle(color: isDarkMode ? Colors.white : Colors.white),
+              style: TextStyle(color: isDarkMode ? Colors.white : Colors.white, fontSize: 18),
             ),
-          )
+          ),
+          const SizedBox(height: 10,)
         ],
       ),
     );

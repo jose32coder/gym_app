@@ -17,9 +17,9 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Panel de control',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          style: TextStyles.boldText(context),
         ),
         actions: const [
           Padding(
