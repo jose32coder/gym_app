@@ -40,19 +40,6 @@ class _MembershipState extends State<Membership> {
     return null;
   }
 
-  String? _validateDateRange() {
-    if (_dateInitController.text.isEmpty)
-      return 'Selecciona la fecha de inicio';
-    if (_dateFinalController.text.isEmpty) return 'Selecciona la fecha final';
-
-    DateTime start = _dateFormat.parse(_dateInitController.text);
-    DateTime end = _dateFormat.parse(_dateFinalController.text);
-
-    if (end.isBefore(start))
-      return 'Fecha final no puede ser anterior a la inicial';
-    return null;
-  }
-
   void _setDateRange(String tipo) {
     DateTime now = DateTime.now();
     DateTime end;

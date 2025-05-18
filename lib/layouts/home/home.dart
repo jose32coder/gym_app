@@ -1,5 +1,5 @@
 import 'package:basic_flutter/layouts/admin/adminPay/payViews/widgets/history_operations.dart';
-import 'package:basic_flutter/components/plan_membership.dart';
+import 'package:basic_flutter/layouts/home/widgets/ingresos_chart.dart';
 import 'package:basic_flutter/layouts/home/widgets/resume_cards.dart';
 import 'package:basic_flutter/components/text_style.dart';
 import 'package:basic_flutter/layouts/home/widgets/welcome_message.dart';
@@ -28,25 +28,75 @@ class _HomeState extends State<Home> {
           )
         ],
       ),
-      body:  SingleChildScrollView(
+      body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Bienvenida y fecha
               const WelcomeMessage(),
+              Text(
+                'Usuarios y actividades',
+                style: TextStyles.boldText(context),
+              ),
+              SizedBox(
+                height: 10,
+              ),
               // Resumen rápido (Cards en fila)
-              const ResumeCards(),
+              GridView.count(
+                crossAxisCount: 2,
+                crossAxisSpacing: 4,
+                mainAxisSpacing: 4,
+                shrinkWrap: true,
+                physics:
+                    NeverScrollableScrollPhysics(), // para que no haga scroll independiente
+                children: const [
+                  ResumeCards(
+                      title: 'Total personas',
+                      value: '500',
+                      icon: Icons.people,
+                      color: Colors.blue),
+                  ResumeCards(
+                      title: 'Personas activas',
+                      value: '320',
+                      icon: Icons.person,
+                      color: Colors.green),
+                  ResumeCards(
+                      title: 'Membresías vigentes',
+                      value: '280',
+                      icon: Icons.card_membership,
+                      color: Colors.indigo),
+                  ResumeCards(
+                      title: 'Por vencer',
+                      value: '45',
+                      icon: Icons.warning,
+                      color: Colors.red),
+                ],
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              Text(
+                'Promedio de ingresos',
+                style: TextStyles.boldText(context),
+              ),
+              SizedBox(
+                height: 10,
+              ),
               // Planes de Membresía (cards horizontales o GridView)
-              const PlanMembership(),
+              SizedBox(height: 250, child: IngresosChart()),
               // Últimos movimientos (ListView)
-
+              SizedBox(
+                height: 20,
+              ),
               SingleChildScrollView(
                 padding: const EdgeInsets.only(top: 5, bottom: 20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Últimos Movimientos', style: TextStyles.boldText(context)),
+                    Text('Últimos movimientos',
+                        style: TextStyles.boldText(context)),
                     const SizedBox(height: 10),
                     const ListaMovimientos(cantidadAMostrar: 5)
                   ],

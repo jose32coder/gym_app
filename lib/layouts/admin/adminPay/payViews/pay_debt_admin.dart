@@ -1,6 +1,4 @@
-import 'package:basic_flutter/layouts/admin/adminPay/payViews/widgets/filter_date.dart';
 import 'package:basic_flutter/layouts/admin/adminPay/payViews/widgets/member_card_state.dart';
-import 'package:basic_flutter/layouts/admin/adminPay/payViews/widgets/filter_drop.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'dart:convert';
@@ -15,7 +13,6 @@ class PayDebtAdmin extends StatefulWidget {
 class _PayDebtAdminState extends State<PayDebtAdmin> {
   Future<List<dynamic>>? membresiasFuture;
   String? estadoSeleccionado;
-  DateTime? fechaSeleccionada;
 
   Future<List<dynamic>> cargarMembresias() async {
     String jsonString =
@@ -32,7 +29,7 @@ class _PayDebtAdminState extends State<PayDebtAdmin> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
+    return FutureBuilder<List<dynamic>>(
       future: membresiasFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -40,51 +37,32 @@ class _PayDebtAdminState extends State<PayDebtAdmin> {
         } else if (snapshot.hasError) {
           return const Center(child: Text('Error al cargar datos'));
         } else {
-          final membresias = snapshot.data as List<dynamic>;
+          final membresias = snapshot.data ?? [];
 
           final membresiasFiltradas = membresias.where((m) {
             final estadoCoincide =
                 estadoSeleccionado == null || m['estado'] == estadoSeleccionado;
-            final fechaCoincide = fechaSeleccionada == null ||
-                m['fechaVencimiento'] ==
-                    fechaSeleccionada!.toIso8601String().substring(0, 10);
-            return estadoCoincide && fechaCoincide;
+            return estadoCoincide;
           }).toList();
 
           return Column(
             children: [
-              Wrap(
-                spacing: 8,
-                alignment: WrapAlignment.center,
-                children: [
-                  FilterDrop(
-                    estadoSeleccionado: estadoSeleccionado,
-                    onChanged: (nuevoEstado) {
-                      setState(() {
-                        estadoSeleccionado = nuevoEstado;
-                      });
-                    },
-                  ),
-                  FilterDate(
-                    fechaSeleccionada: fechaSeleccionada,
-                    onDateSelected: (fecha) {
-                      setState(() {
-                        fechaSeleccionada = fecha;
-                      });
-                    },
-                  ),
-                  TextButton.icon(
-                    onPressed: () {
-                      setState(() {
-                        estadoSeleccionado = null;
-                        fechaSeleccionada = null;
-                      });
-                    },
-                    icon: const Icon(Icons.clear),
-                    label: const Text('Limpiar filtros'),
-                  ),
-                ],
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: FilterDrop(
+                  estadoSeleccionado: estadoSeleccionado,
+                  onChanged: (nuevoEstado) {
+                    setState(() {
+                      estadoSeleccionado = nuevoEstado;
+                    });
+                  },
+                ),
               ),
+
+              // Separación entre filtro y lista
+              const SizedBox(height: 12),
+
               Expanded(
                 child: membresiasFiltradas.isEmpty
                     ? const Center(child: Text('No hay resultados'))
@@ -97,7 +75,7 @@ class _PayDebtAdminState extends State<PayDebtAdmin> {
                             cliente: item['cliente'],
                             fechaVencimiento: item['fechaVencimiento'],
                             estado: item['estado'],
-                            monto: item['monto'].toDouble(),
+                            monto: (item['monto'] as num).toDouble(),
                           );
                         },
                       ),
@@ -106,6 +84,95 @@ class _PayDebtAdminState extends State<PayDebtAdmin> {
           );
         }
       },
+    );
+  }
+}
+
+class FilterDrop extends StatelessWidget {
+  final String? estadoSeleccionado;
+  final ValueChanged<String?> onChanged;
+
+  const FilterDrop({
+    Key? key,
+    required this.estadoSeleccionado,
+    required this.onChanged,
+  }) : super(key: key);
+
+  static const List<String> estados = [
+    'Por Vencer',
+    'Vencido',
+    'Activo',
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    // Valor para "Todos"
+    const todosValor = 'todos';
+
+    return Row(
+      children: [
+        Expanded(
+          flex: 2,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: theme.colorScheme.primary.withOpacity(0.5),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: theme.colorScheme.primary.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                isExpanded: true,
+                icon: Icon(Icons.filter_list, color: theme.colorScheme.primary),
+                value: estadoSeleccionado ?? todosValor,
+                items: [
+                  DropdownMenuItem<String>(
+                    value: todosValor,
+                    child: Text('Todos'),
+                  ),
+                  ...estados.map(
+                    (estado) => DropdownMenuItem<String>(
+                      value: estado,
+                      child: Text(
+                        estado,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+                onChanged: (value) {
+                  if (value == todosValor) {
+                    onChanged(null);
+                  } else {
+                    onChanged(value);
+                  }
+                },
+                dropdownColor: theme.cardColor,
+                style: TextStyle(
+                  color: theme.colorScheme.primary,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

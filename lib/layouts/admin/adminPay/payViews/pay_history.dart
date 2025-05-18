@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'widgets/payment_card.dart';
 import 'widgets/payment_details_modal.dart';
-import 'widgets/search_bar.dart';
+import '../../../../components/search_bar.dart';
 
 class PayHistory extends StatefulWidget {
   @override
@@ -87,9 +87,12 @@ class _PayHistoryState extends State<PayHistory> {
       children: [
         Column(
           children: [
-            SearchingBar(
-              controller: searchController,
-              theme: theme,
+            Padding(
+              padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 16.0, top: 8),
+              child: SearchingBar(
+                controller: searchController,
+                theme: theme,
+              ),
             ),
             Expanded(
               child: filteredPayments.isEmpty

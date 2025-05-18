@@ -5,35 +5,35 @@
       "cliente": "José Pérez",
       "monto": 20.0,
       "fechaVencimiento": "2025-05-10",
-      "estado": "vencido"
+      "estado": "Vencido"
     },
     {
       "id": "def456",
       "cliente": "María Ruiz",
       "monto": 15.0,
       "fechaVencimiento": "2025-05-20",
-      "estado": "por vencer"
+      "estado": "Por Vencer"
     },
     {
       "id": "ghi789",
       "cliente": "Carlos Gómez",
       "monto": 25.0,
       "fechaVencimiento": "2025-05-05",
-      "estado": "vencido"
+      "estado": "Vencido"
     },
     {
       "id": "jkl012",
       "cliente": "Lucía Herrera",
       "monto": 18.0,
       "fechaVencimiento": "2025-05-25",
-      "estado": "activo"
+      "estado": "Activo"
     },
     {
       "id": "mno345",
       "cliente": "Pedro Ramírez",
       "monto": 22.0,
       "fechaVencimiento": "2025-05-22",
-      "estado": "por vencer"
+      "estado": "Por Vencer"
     }
   ]
 }

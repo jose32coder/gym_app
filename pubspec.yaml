@@ -13,6 +13,7 @@ dependencies:
   flutter_plugin_android_lifecycle: ^2.0.28
   horizontal_data_table: ^4.3.1
   intl: ^0.19.0
+  fl_chart: ^0.66.0
   flutter_localizations:
     sdk: flutter
 

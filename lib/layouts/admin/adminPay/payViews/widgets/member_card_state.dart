@@ -16,15 +16,15 @@ class MemberCardState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color colorIcono = estado == 'vencido'
+    Color colorIcono = estado == 'Vencido'
         ? Colors.red
-        : estado == 'por vencer'
+        : estado == 'Por Vencer'
             ? Colors.orange
             : Colors.green;
 
-    IconData icono = estado == 'vencido'
+    IconData icono = estado == 'Vencido'
         ? Icons.warning_amber
-        : estado == 'por vencer'
+        : estado == 'Por Pencer'
             ? Icons.access_time
             : Icons.check_circle;
 

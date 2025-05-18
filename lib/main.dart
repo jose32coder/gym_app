@@ -1,5 +1,6 @@
 import 'package:basic_flutter/layouts/navigation_menu.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() {
@@ -105,13 +106,30 @@ class MainApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-     localizationsDelegates: [
+      builder: (context, child) {
+        final brightness = MediaQuery.platformBrightnessOf(context);
+        final isDark = brightness == Brightness.dark;
+
+        SystemChrome.setSystemUIOverlayStyle(
+          SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+            systemNavigationBarColor:
+                isDark ? const Color(0xFF1E1E1E) : Colors.white,
+            systemNavigationBarIconBrightness:
+                isDark ? Brightness.light : Brightness.dark,
+          ),
+        );
+
+        return child!;
+      },
+      localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,  // ✅ esto ya funciona con tu pubspec.yaml
+        GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: [
-        const Locale('es', ''),  // ✅ idioma español
+      supportedLocales: const [
+        Locale('es', ''),
       ],
       home: const NavigationMenu(),
     );
