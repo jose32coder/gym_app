@@ -1,8 +1,8 @@
 // ignore_for_file: camel_case_types
 import 'package:basic_flutter/components/text_style.dart';
 import 'package:flutter/material.dart';
-import 'package:basic_flutter/components/image_selector.dart';
-import 'package:basic_flutter/components/textformfield.dart';
+import 'package:basic_flutter/layouts/persons/widgets/image_selector.dart';
+import 'package:basic_flutter/layouts/persons/widgets/textformfield.dart';
 
 class AddPersons extends StatelessWidget {
   final bool showMembresia;
@@ -34,7 +34,7 @@ class AddPersons extends StatelessWidget {
             children: [
               const Imageselector(),
               const SizedBox(height: 30),
-              TextFormPage(showMembresia: showMembresia),
+              TextFormPage(),
                // ahora todo con scroll si hace falta
             ],
           ),

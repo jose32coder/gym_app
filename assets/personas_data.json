@@ -1,0 +1,39 @@
+{
+  "membresias": [
+    {
+      "id": "abc123",
+      "cliente": "José Pérez",
+      "monto": 20.0,
+      "fechaVencimiento": "2025-05-10",
+      "estado": "vencido"
+    },
+    {
+      "id": "def456",
+      "cliente": "María Ruiz",
+      "monto": 15.0,
+      "fechaVencimiento": "2025-05-20",
+      "estado": "por vencer"
+    },
+    {
+      "id": "ghi789",
+      "cliente": "Carlos Gómez",
+      "monto": 25.0,
+      "fechaVencimiento": "2025-05-05",
+      "estado": "vencido"
+    },
+    {
+      "id": "jkl012",
+      "cliente": "Lucía Herrera",
+      "monto": 18.0,
+      "fechaVencimiento": "2025-05-25",
+      "estado": "activo"
+    },
+    {
+      "id": "mno345",
+      "cliente": "Pedro Ramírez",
+      "monto": 22.0,
+      "fechaVencimiento": "2025-05-22",
+      "estado": "por vencer"
+    }
+  ]
+}

@@ -1,8 +1,8 @@
-import 'package:basic_flutter/components/history_operations.dart';
+import 'package:basic_flutter/layouts/admin/adminPay/payViews/widgets/history_operations.dart';
 import 'package:basic_flutter/components/plan_membership.dart';
-import 'package:basic_flutter/components/resume_cards.dart';
+import 'package:basic_flutter/layouts/home/widgets/resume_cards.dart';
 import 'package:basic_flutter/components/text_style.dart';
-import 'package:basic_flutter/components/welcome_message.dart';
+import 'package:basic_flutter/layouts/home/widgets/welcome_message.dart';
 import 'package:flutter/material.dart';
 
 class Home extends StatefulWidget {

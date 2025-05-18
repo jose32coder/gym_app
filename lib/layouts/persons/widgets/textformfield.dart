@@ -1,14 +1,11 @@
-import 'package:basic_flutter/components/membership.dart';
 import 'package:basic_flutter/components/text_style.dart';
-import 'package:basic_flutter/components/genero_selector.dart';
+import 'package:basic_flutter/layouts/persons/widgets/genero_selector.dart';
+import 'package:basic_flutter/layouts/admin/adminPay/payViews/pay_register.dart';
 import 'package:flutter/material.dart';
 
 class TextFormPage extends StatefulWidget {
-  final bool showMembresia;
-
   const TextFormPage({
     super.key,
-    this.showMembresia = false,
   });
 
   @override
@@ -17,11 +14,9 @@ class TextFormPage extends StatefulWidget {
 
 class _TextFormPageState extends State<TextFormPage> {
   final _formKey = GlobalKey<FormState>();
-  final _membershipKey = GlobalKey<FormState>(); // Añadido para la membresía
 
   @override
   Widget build(BuildContext context) {
-    final bool mostrarMembresia;
     bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Form(
@@ -123,40 +118,76 @@ class _TextFormPageState extends State<TextFormPage> {
             },
           ),
           const SizedBox(height: 20),
-          if (widget.showMembresia) Membership(formKey: _membershipKey),
-          
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               if (_formKey.currentState!.validate()) {
-                Future.delayed(const Duration(milliseconds: 100), () {
-                  if (_membershipKey.currentState!.validate()) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('Persona registrada correctamente')),
-                    );
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Hay campos vacíos o con algún error',
-                            style: TextStyle(fontSize: 16)),
-                        backgroundColor: Colors.red,
+                // Llamar al diálogo modal para preguntar si quiere pagar ahora
+                final bool? pagarAhora = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('¿Deseas pagar la membresía ahora?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(false),
+                        child: const Text('Solo registrar'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => Navigator.of(context).pop(true),
+                        child: const Text('Pagar ahora'),
+                      ),
+                    ],
+                  ),
+                );
+
+                if (pagarAhora != null) {
+                  if (pagarAhora) {
+                    // Navegar a Membership con pagoInmediato = true
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => PayRegister(
+                          desdeAdmin: false,
+                          cedula: '12345678',
+                          nombreCompleto: 'Jose Perez',
+                        ),
                       ),
                     );
+                  } else {
+                    // Solo registro sin pago
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text('Membresía registrada sin pago')),
+                    );
                   }
-                });
+                }
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Completa todos los campos correctamente'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
               }
             },
             style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 50),
-                backgroundColor: Colors.blue.shade400,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10))),
+              minimumSize: const Size(double.infinity, 50),
+              backgroundColor: Colors.blue.shade400,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
             child: Text(
               'Registrar',
-              style: TextStyle(color: isDarkMode ? Colors.white : Colors.white, fontSize: 18),
+              style: TextStyle(
+                color: isDarkMode ? Colors.white : Colors.white,
+                fontSize: 18,
+              ),
             ),
           ),
-          const SizedBox(height: 10,)
+          const SizedBox(
+            height: 10,
+          )
         ],
       ),
     );

@@ -1,6 +1,6 @@
-import 'package:basic_flutter/components/tabla_personas.dart';
+import 'package:basic_flutter/components/table_persons.dart';
 import 'package:basic_flutter/components/text_style.dart';
-import 'package:basic_flutter/layouts/add_person.dart';
+import 'package:basic_flutter/layouts/persons/add_person.dart';
 import 'package:flutter/material.dart';
 
 // PANTALLA PRINCIPAL
@@ -16,31 +16,35 @@ class _AdminPerState extends State<AdminPer> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
+          leading: IconButton(
             onPressed: () {
               FocusScope.of(context).unfocus();
               Navigator.pop(context);
             },
-            icon: Icon(Icons.arrow_back_ios)),
-        title: Text('Personas Totales', style: TextStyles.boldText(context),),
-        centerTitle: true,
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 20),
-            child: Icon(Icons.add_alert),
-          )
-        ]
-      ),
-      body: Padding(
+            icon: const Icon(Icons.arrow_back_ios),
+          ),
+          title: Text(
+            'Personas Totales',
+            style: TextStyles.boldText(context),
+          ),
+          centerTitle: true,
+          actions: const [
+            Padding(
+              padding: EdgeInsets.only(right: 20),
+              child: Icon(Icons.add_alert),
+            )
+          ]),
+      body: const Padding(
         padding: EdgeInsets.all(8.0),
-        child: TablaPersonas(), // Aquí va el widget de la tabla
+        child: TablePersons(), // Aquí va el widget de la tabla
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => AddPersons(showMembresia: false)));
+                  builder: (context) =>
+                      const AddPersons(showMembresia: false)));
         },
         icon: const Icon(Icons.add),
         label: const Text("Agregar Persona"),

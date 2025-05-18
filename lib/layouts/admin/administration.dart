@@ -1,9 +1,9 @@
-import 'package:basic_flutter/components/admin_cards.dart';
+import 'package:basic_flutter/layouts/admin/widgets/admin_cards.dart';
 import 'package:basic_flutter/components/text_style.dart';
-import 'package:basic_flutter/layouts/adminViews/admin_assis.dart';
-import 'package:basic_flutter/layouts/adminViews/admin_member.dart';
-import 'package:basic_flutter/layouts/adminViews/admin_pay.dart';
-import 'package:basic_flutter/layouts/adminViews/admin_per.dart';
+import 'package:basic_flutter/layouts/admin/adminAssist/admin_assis.dart';
+import 'package:basic_flutter/layouts/admin/adminMember/admin_member.dart';
+import 'package:basic_flutter/layouts/admin/adminPay/admin_pay.dart';
+import 'package:basic_flutter/layouts/admin/adminPer/admin_per.dart';
 import 'package:flutter/material.dart';
 
 class Administration extends StatelessWidget {

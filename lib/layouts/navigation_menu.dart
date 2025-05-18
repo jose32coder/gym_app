@@ -1,7 +1,7 @@
-import 'package:basic_flutter/layouts/administration.dart';
+import 'package:basic_flutter/layouts/admin/administration.dart';
 import 'package:flutter/material.dart';
-import 'package:basic_flutter/layouts/home.dart';
-import 'package:basic_flutter/layouts/add_person.dart';
+import 'package:basic_flutter/layouts/home/home.dart';
+import 'package:basic_flutter/layouts/persons/add_person.dart';
 
 class NavigationMenu extends StatefulWidget {
   const NavigationMenu({super.key});

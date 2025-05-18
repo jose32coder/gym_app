@@ -1,6 +1,6 @@
 import 'package:basic_flutter/layouts/navigation_menu.dart';
 import 'package:flutter/material.dart';
-
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() {
   runApp(const MainApp());
@@ -105,8 +105,14 @@ class MainApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-
-
+     localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,  // ✅ esto ya funciona con tu pubspec.yaml
+      ],
+      supportedLocales: [
+        const Locale('es', ''),  // ✅ idioma español
+      ],
       home: const NavigationMenu(),
     );
   }

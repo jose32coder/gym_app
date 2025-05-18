@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class TablaPersonas extends StatelessWidget {
-  const TablaPersonas({super.key});
+class TablePersons extends StatelessWidget {
+  const TablePersons({super.key});
 
   // Datos de ejemplo
   final List<Map<String, String>> personas = const [
@@ -128,7 +128,7 @@ class TablaPersonas extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(height: 20,),
+                const SizedBox(height: 20,),
                 PaginatedDataTable(
                   columns: [
                     DataColumn(
