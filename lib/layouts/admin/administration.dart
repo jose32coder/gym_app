@@ -1,10 +1,12 @@
+import 'package:basic_flutter/components/notification_modal.dart';
+import 'package:basic_flutter/layouts/admin/adminMember/admin_member.dart';
 import 'package:basic_flutter/layouts/admin/widgets/admin_cards.dart';
 import 'package:basic_flutter/components/text_style.dart';
 import 'package:basic_flutter/layouts/admin/adminReport/admin_report.dart';
-import 'package:basic_flutter/layouts/admin/adminMember/admin_member.dart';
 import 'package:basic_flutter/layouts/admin/adminPay/admin_pay.dart';
 import 'package:basic_flutter/layouts/admin/adminPer/admin_per.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class Administration extends StatelessWidget {
   const Administration({super.key});
@@ -13,12 +15,25 @@ class Administration extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Administración', style: TextStyles.boldText(context),),
+        title: Text('Administración', style: TextStyles.boldPrimaryText(context),),
         centerTitle: false,
-        actions: const [
+        actions: [
           Padding(
-            padding: EdgeInsets.only(right: 20),
-            child: Icon(Icons.add_alert),
+            padding: const EdgeInsets.only(right: 10),
+            child: IconButton(
+              icon: const FaIcon(FontAwesomeIcons.bell),
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(20)),
+                  ),
+                  builder: (context) => const NotificationModal(),
+                );
+              },
+            ),
           )
         ],
       ),
@@ -39,17 +54,17 @@ class Administration extends StatelessWidget {
                 },
               ),
               const SizedBox(height: 10,),
-              // AdminCard(
-              //   title: 'Membresías',
-              //   subtitle: 'Listado de membresías del gimnasio',
-              //   imagePath: 'assets/images/fondo2.jpg',
-              //   onPressed: () {
-              //     Navigator.push(
-              //       context,
-              //       MaterialPageRoute(builder: (context) => const AdminMember()));
-              //   },
-              // ),
-              // const SizedBox(height: 10,),
+              AdminCard(
+                title: 'Membresías',
+                subtitle: 'Listado de membresías del gimnasio',
+                imagePath: 'assets/images/fondo2.jpg',
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const AdminMember()));
+                },
+              ),
+              const SizedBox(height: 10,),
               AdminCard(
                 title: 'Pagos',
                 subtitle: 'Administración de pagos generales',

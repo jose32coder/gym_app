@@ -1,4 +1,5 @@
 import 'package:basic_flutter/components/search_bar.dart';
+import 'package:basic_flutter/components/text_style.dart';
 import 'package:flutter/material.dart';
 
 class ReportMembership extends StatefulWidget {
@@ -13,24 +14,15 @@ class _ReportMembershipState extends State<ReportMembership>
   late TabController _tabController;
   String _selectedPeriodo = 'Mes';
   final List<String> _periodos = ['Día', 'Semana', 'Mes', 'Año'];
-
-  String _selectedTipo = 'Todas'; // filtro para tipo de membresía
-
+  final String _selectedTipo = 'Todas';
 
   final TextEditingController controller = TextEditingController();
 
-  // Datos de ejemplo para cada estado
   final List<Map<String, dynamic>> membresiasVigentesMock = [
     {'usuario': 'Juan Pérez', 'tipo': 'Básica', 'vence': '10/08/2025'},
     {'usuario': 'María López', 'tipo': 'Premium', 'vence': '15/08/2025'},
     {'usuario': 'Carlos Ruiz', 'tipo': 'VIP', 'vence': '20/08/2025'},
     {'usuario': 'Ana Gómez', 'tipo': 'Básica', 'vence': '22/08/2025'},
-  ];
-
-  final List<Map<String, dynamic>> membresiasPorVencerMock = [
-    {'usuario': 'Luis Fernández', 'tipo': 'Básica', 'vence': '01/06/2025'},
-    {'usuario': 'Sofía Martínez', 'tipo': 'Premium', 'vence': '03/06/2025'},
-    {'usuario': 'Pedro Sánchez', 'tipo': 'VIP', 'vence': '04/06/2025'},
   ];
 
   final List<Map<String, dynamic>> membresiasMasPagadasMock = [
@@ -44,11 +36,10 @@ class _ReportMembershipState extends State<ReportMembership>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
 
     todasMembresias = [
       ...membresiasVigentesMock,
-      ...membresiasPorVencerMock,
     ];
 
     _tabController.addListener(() {
@@ -67,13 +58,11 @@ class _ReportMembershipState extends State<ReportMembership>
     super.dispose();
   }
 
-  // Filtrar por tipo
   List<Map<String, dynamic>> filterByTipo(List<Map<String, dynamic>> list) {
     if (_selectedTipo == 'Todas') return list;
     return list.where((m) => m['tipo'] == _selectedTipo).toList();
   }
 
-  // Filtrar por búsqueda (busca en usuario o tipo)
   List<Map<String, dynamic>> filterBySearch(List<Map<String, dynamic>> list) {
     final query = controller.text.toLowerCase();
     if (query.isEmpty) return list;
@@ -87,12 +76,12 @@ class _ReportMembershipState extends State<ReportMembership>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     Widget content;
 
     switch (_tabController.index) {
       case 0:
-        // Todas (vigentes + por vencer)
         var listaFiltrada = filterByTipo(todasMembresias);
         listaFiltrada = filterBySearch(listaFiltrada);
         content = ListView.builder(
@@ -100,7 +89,7 @@ class _ReportMembershipState extends State<ReportMembership>
           itemBuilder: (_, i) {
             final m = listaFiltrada[i];
             return ListTile(
-              leading: const Icon(Icons.list_alt, color: Colors.blueGrey),
+              leading: Icon(Icons.list_alt, color: theme.colorScheme.primary),
               title: Text('${m['tipo']} - ${m['usuario']}'),
               subtitle: Text('Vence: ${m['vence']}'),
             );
@@ -109,7 +98,6 @@ class _ReportMembershipState extends State<ReportMembership>
         break;
 
       case 1:
-        // Vigentes
         var listaFiltrada = filterByTipo(membresiasVigentesMock);
         listaFiltrada = filterBySearch(listaFiltrada);
         content = ListView.builder(
@@ -117,7 +105,8 @@ class _ReportMembershipState extends State<ReportMembership>
           itemBuilder: (_, i) {
             final m = listaFiltrada[i];
             return ListTile(
-              leading: const Icon(Icons.card_membership, color: Colors.indigo),
+              leading: Icon(Icons.card_membership,
+                  color: theme.colorScheme.primary), // ← COLOR AQUÍ
               title: Text('${m['tipo']} - ${m['usuario']}'),
               subtitle: Text('Vence: ${m['vence']}'),
             );
@@ -126,24 +115,6 @@ class _ReportMembershipState extends State<ReportMembership>
         break;
 
       case 2:
-        // Por vencer
-        var listaFiltrada = filterByTipo(membresiasPorVencerMock);
-        listaFiltrada = filterBySearch(listaFiltrada);
-        content = ListView.builder(
-          itemCount: listaFiltrada.length,
-          itemBuilder: (_, i) {
-            final m = listaFiltrada[i];
-            return ListTile(
-              leading: const Icon(Icons.warning, color: Colors.orange),
-              title: Text('${m['tipo']} - ${m['usuario']}'),
-              subtitle: Text('Vence: ${m['vence']}'),
-            );
-          },
-        );
-        break;
-
-      case 3:
-        // Más pagadas
         var listaFiltrada = _selectedTipo == 'Todas'
             ? membresiasMasPagadasMock
             : membresiasMasPagadasMock
@@ -154,7 +125,7 @@ class _ReportMembershipState extends State<ReportMembership>
           itemBuilder: (_, i) {
             final m = listaFiltrada[i];
             return ListTile(
-              leading: const Icon(Icons.star, color: Colors.purple),
+              leading: Icon(Icons.star, color: theme.colorScheme.primary),
               title: Text('${m['tipo']}'),
               trailing: Text('Vendidas: ${m['cantidad']}'),
             );
@@ -168,13 +139,40 @@ class _ReportMembershipState extends State<ReportMembership>
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Membresías'),
+        leading: IconButton(
+          onPressed: () {
+            FocusScope.of(context).unfocus();
+            Navigator.pop(context);
+          },
+          icon: const Icon(Icons.arrow_back_ios),
+        ),
+        title: Text(
+          'Membresías',
+          style: TextStyles.boldPrimaryText(context),
+        ),
+        centerTitle: true,
         bottom: TabBar(
           controller: _tabController,
+          indicatorColor: theme.colorScheme.onInverseSurface,
+          unselectedLabelColor: isDarkMode
+              ? theme.colorScheme.onInverseSurface
+              : theme.colorScheme.onSurface,
+          labelColor: isDarkMode
+              ? theme.colorScheme.onSurface
+              : theme.colorScheme.onInverseSurface,
+          indicatorSize: TabBarIndicatorSize.tab, // Aquí está la clave
+          indicator: UnderlineTabIndicator(
+            borderSide: BorderSide(
+              width: 3.0,
+              color: isDarkMode
+                  ? theme.colorScheme.onSurface
+                  : theme.colorScheme.onInverseSurface,
+            ),
+            insets: EdgeInsets.zero,
+          ),
           tabs: const [
             Tab(text: 'Todas'),
             Tab(text: 'Vigentes'),
-            Tab(text: 'Por vencer'),
             Tab(text: 'Más pagadas'),
           ],
         ),
@@ -185,7 +183,6 @@ class _ReportMembershipState extends State<ReportMembership>
           children: [
             Row(
               children: [
-                // Dropdown Periodo
                 Expanded(
                   flex: 2,
                   child: Container(
@@ -219,7 +216,7 @@ class _ReportMembershipState extends State<ReportMembership>
                                   style: TextStyle(
                                     fontWeight: FontWeight.w600,
                                     fontSize: 16,
-                                    color: theme.colorScheme.primary,
+                                    color: theme.colorScheme.onSurface,
                                   ),
                                 ),
                               ),
@@ -241,18 +238,23 @@ class _ReportMembershipState extends State<ReportMembership>
                   ),
                 ),
                 const SizedBox(width: 12),
-                // Botón PDF
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(6),
                     ),
                   ),
-                  icon: const Icon(Icons.picture_as_pdf, size: 20),
+                  icon: const Icon(
+                    Icons.picture_as_pdf,
+                    size: 20,
+                    color: Colors.redAccent,
+                  ),
                   label: const Text('PDF',
-                      style: TextStyle(fontWeight: FontWeight.w600)),
+                      style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: Colors.redAccent)),
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -261,32 +263,35 @@ class _ReportMembershipState extends State<ReportMembership>
                   },
                 ),
                 const SizedBox(width: 12),
-                // Botón Excel
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-                    backgroundColor:
-                        theme.colorScheme.secondary.withAlpha(50),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 14),
                     foregroundColor: theme.colorScheme.onSurface,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(6),
                     ),
                   ),
-                  icon: const Icon(Icons.file_copy, size: 20),
+                  icon: const Icon(
+                    Icons.file_copy,
+                    size: 20,
+                    color: Colors.lightGreen,
+                  ),
                   label: const Text('Excel',
-                      style: TextStyle(fontWeight: FontWeight.w600)),
+                      style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: Colors.lightGreen)),
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                          content: Text('Generando Excel de $_selectedPeriodo')),
+                          content:
+                              Text('Generando Excel de $_selectedPeriodo')),
                     );
                   },
                 ),
               ],
             ),
             const SizedBox(height: 20),
-            // Buscador
             SearchingBar(controller: controller, theme: theme),
             const SizedBox(height: 16),
             Expanded(child: content),

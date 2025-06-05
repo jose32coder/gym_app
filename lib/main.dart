@@ -1,10 +1,46 @@
-import 'package:basic_flutter/layouts/navigation_menu.dart';
+import 'dart:io';
+
+import 'package:basic_flutter/gymCodeOrSelect/selection_rol_page.dart';
+import 'package:basic_flutter/login/sign_in.dart';
+import 'package:basic_flutter/login/sign_up.dart';
+import 'package:basic_flutter/navigation_menu.dart';
+import 'package:basic_flutter/viewmodel/auth_viewmodel.dart';
+import 'package:basic_flutter/viewmodel/user_viewmodel.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:provider/provider.dart';
 
-void main() {
-  runApp(const MainApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+
+  String host = 'localhost';
+  if (!kIsWeb && Platform.isAndroid) {
+    host = '192.168.0.203';
+  }
+
+  print('DEBUG MODE: $kDebugMode');
+
+  if (kDebugMode) {
+    FirebaseAuth.instance.setSettings(appVerificationDisabledForTesting: true);
+    await FirebaseAuth.instance.useAuthEmulator(host, 9099);
+    FirebaseFirestore.instance.useFirestoreEmulator(host, 8080);
+  }
+
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthViewmodel()),
+        ChangeNotifierProvider(create: (_) => UserViewmodel()),
+      ],
+      child: const MainApp(),
+    ),
+  );
 }
 
 class MainApp extends StatelessWidget {
@@ -14,7 +50,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'MobileMend',
+      title: 'FitnestX',
       themeMode: ThemeMode.system,
       theme: ThemeData(
         colorScheme: ColorScheme.light(
@@ -113,7 +149,8 @@ class MainApp extends StatelessWidget {
         SystemChrome.setSystemUIOverlayStyle(
           SystemUiOverlayStyle(
             statusBarColor: Colors.transparent,
-            statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+            statusBarIconBrightness:
+                isDark ? Brightness.light : Brightness.dark,
             systemNavigationBarColor:
                 isDark ? const Color(0xFF1E1E1E) : Colors.white,
             systemNavigationBarIconBrightness:
@@ -131,7 +168,18 @@ class MainApp extends StatelessWidget {
       supportedLocales: const [
         Locale('es', ''),
       ],
-      home: const NavigationMenu(),
+      home: StreamBuilder<User?>(
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasData) {
+            return const NavigationMenu();
+          }
+          return const SelectionRolPage();
+        },
+      ),
     );
   }
 }

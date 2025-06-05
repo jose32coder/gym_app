@@ -14,7 +14,7 @@ class IngresosChart extends StatelessWidget {
             BarChartGroupData(x: i, barRods: [BarChartRodData(toY: (10 + i * 5).toDouble(), color: Colors.blue)]),
         ],
         titlesData: FlTitlesData(
-          leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true)),
+          leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: true)),
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,

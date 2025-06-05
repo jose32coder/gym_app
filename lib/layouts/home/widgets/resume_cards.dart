@@ -20,15 +20,15 @@ class ResumeCards extends StatelessWidget {
       elevation: 3,
       color: color.withOpacity(0.1),
       child: Padding(
-        padding: EdgeInsets.all(12),
+        padding: const EdgeInsets.all(12),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon, size: 36, color: color),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(value, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: color)),
-            SizedBox(height: 4),
-            Text(title, textAlign: TextAlign.center, style: TextStyle(fontSize: 14)),
+            const SizedBox(height: 4),
+            Text(title, textAlign: TextAlign.center, style: const TextStyle(fontSize: 14)),
           ],
         ),
       ),

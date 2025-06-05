@@ -1,9 +1,11 @@
+import 'package:basic_flutter/components/notification_modal.dart';
 import 'package:basic_flutter/layouts/admin/adminPay/payViews/widgets/history_operations.dart';
 import 'package:basic_flutter/layouts/home/widgets/ingresos_chart.dart';
 import 'package:basic_flutter/layouts/home/widgets/resume_cards.dart';
 import 'package:basic_flutter/components/text_style.dart';
 import 'package:basic_flutter/layouts/home/widgets/welcome_message.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -19,12 +21,25 @@ class _HomeState extends State<Home> {
       appBar: AppBar(
         title: Text(
           'Panel de control',
-          style: TextStyles.boldText(context),
+          style: TextStyles.boldPrimaryText(context),
         ),
-        actions: const [
+      actions: [
           Padding(
-            padding: EdgeInsets.only(right: 20),
-            child: Icon(Icons.add_alert),
+            padding: const EdgeInsets.only(right: 10),
+            child: IconButton(
+              icon: const FaIcon(FontAwesomeIcons.bell),
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(20)),
+                  ),
+                  builder: (context) => const NotificationModal(),
+                );
+              },
+            ),
           )
         ],
       ),
@@ -40,7 +55,7 @@ class _HomeState extends State<Home> {
                 'Usuarios y actividades',
                 style: TextStyles.boldText(context),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 10,
               ),
               // Resumen rápido (Cards en fila)
@@ -50,7 +65,7 @@ class _HomeState extends State<Home> {
                 mainAxisSpacing: 4,
                 shrinkWrap: true,
                 physics:
-                    NeverScrollableScrollPhysics(), // para que no haga scroll independiente
+                    const NeverScrollableScrollPhysics(), // para que no haga scroll independiente
                 children: const [
                   ResumeCards(
                       title: 'Total personas',
@@ -74,20 +89,20 @@ class _HomeState extends State<Home> {
                       color: Colors.red),
                 ],
               ),
-              SizedBox(
+              const SizedBox(
                 height: 20,
               ),
               Text(
                 'Promedio de ingresos',
                 style: TextStyles.boldText(context),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 10,
               ),
               // Planes de Membresía (cards horizontales o GridView)
-              SizedBox(height: 250, child: IngresosChart()),
+              const SizedBox(height: 250, child: IngresosChart()),
               // Últimos movimientos (ListView)
-              SizedBox(
+              const SizedBox(
                 height: 20,
               ),
               SingleChildScrollView(

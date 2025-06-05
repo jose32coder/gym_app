@@ -94,11 +94,11 @@ class TablePersons extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(top: 8.0, left: 25),
                   child: Text(
-                    "Lista de Personas",
+                    "Lista de personas",
                     style: TextStyle(
                       fontSize: 24.0,
                       fontWeight: FontWeight.bold,
-                      color: theme.colorScheme.primary,
+                      color: theme.colorScheme.onSurface,
                     ),
                   ),
                 ),
@@ -111,7 +111,7 @@ class TablePersons extends StatelessWidget {
                       hintStyle: TextStyle(color: theme.hintColor),
                       prefixIcon: Icon(
                         Icons.search,
-                        color: theme.colorScheme.primary,
+                        color: theme.colorScheme.onSurface,
                       ),
                       filled: true,
                       fillColor: isDark
@@ -134,22 +134,22 @@ class TablePersons extends StatelessWidget {
                     DataColumn(
                         label: Text('Cédula',
                             style: TextStyle(
-                                color: theme.colorScheme.primary,
+                                color: theme.colorScheme.onSurface,
                                 fontWeight: FontWeight.w600))),
                     DataColumn(
                         label: Text('Nombre',
                             style: TextStyle(
-                                color: theme.colorScheme.primary,
+                                color: theme.colorScheme.onSurface,
                                 fontWeight: FontWeight.w600))),
                     DataColumn(
                         label: Text('Dirección',
                             style: TextStyle(
-                                color: theme.colorScheme.primary,
+                                color: theme.colorScheme.onSurface,
                                 fontWeight: FontWeight.w600))),
                     DataColumn(
                         label: Text('Acciones',
                             style: TextStyle(
-                                color: theme.colorScheme.primary,
+                                color: theme.colorScheme.onSurface,
                                 fontWeight: FontWeight.w600))),
                   ],
                   source: _DataSource(personas, theme),

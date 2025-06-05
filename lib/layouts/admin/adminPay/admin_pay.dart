@@ -1,6 +1,9 @@
+import 'package:basic_flutter/components/notification_modal.dart';
+import 'package:basic_flutter/components/text_style.dart';
 import 'package:basic_flutter/layouts/admin/adminPay/widgets/admin_card_pay_grid.dart';
 
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class AdminPay extends StatefulWidget {
   const AdminPay({super.key});
@@ -16,45 +19,66 @@ class _AdminPayState extends State<AdminPay> {
   Widget build(BuildContext context) {
     final mainColor = Theme.of(context).primaryColor;
 
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Pagos / Facturación'),
-          centerTitle: true,
-          actions: const [
-            Padding(
-              padding: EdgeInsets.only(right: 20),
-              child: Icon(Icons.add_alert),
-            )
-          ],
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'Pagos / Facturación',
+          style: TextStyles.boldPrimaryText(context),
         ),
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 20, left: 16, right: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Administra los pagos:',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        centerTitle: true,
+       actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 10),
+            child: IconButton(
+              icon: const FaIcon(FontAwesomeIcons.bell),
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(20)),
                   ),
-                  SizedBox(height: 20),
-                  _buildAdminCards(),
-                ],
-              ),
+                  builder: (context) => const NotificationModal(),
+                );
+              },
             ),
-            SizedBox(height: 10),
-            if (selectedView != null) ...[
-              Divider(
-                thickness: 3,
-                color: mainColor,
+          )
+        ],
+      ),
+      body: SafeArea(
+        child: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          behavior: HitTestBehavior.opaque,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 20, left: 16, right: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Administra los pagos:',
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 20),
+                    _buildAdminCards(),
+                  ],
+                ),
               ),
-              SizedBox(height: 2),
-              Expanded(child: selectedView!),
+              const SizedBox(height: 10),
+              if (selectedView != null) ...[
+                Divider(
+                  thickness: 3,
+                  color: mainColor,
+                ),
+                const SizedBox(height: 2),
+                Expanded(child: selectedView!),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

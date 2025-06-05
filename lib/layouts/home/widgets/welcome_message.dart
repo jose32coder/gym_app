@@ -1,10 +1,14 @@
+import 'package:basic_flutter/viewmodel/auth_viewmodel.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class WelcomeMessage extends StatelessWidget {
   const WelcomeMessage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final authViewModel = Provider.of<AuthViewmodel>(context);
+    final userName = authViewModel.userName ?? 'Usuario';
     String fecha =
         '${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}';
     bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
@@ -29,7 +33,7 @@ class WelcomeMessage extends StatelessWidget {
       child: Column(
         children: [
           Text(
-            '👋 Bienvenido, User',
+            '👋 Bienvenido, $userName',
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,

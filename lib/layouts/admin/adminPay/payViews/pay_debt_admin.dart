@@ -93,10 +93,10 @@ class FilterDrop extends StatelessWidget {
   final ValueChanged<String?> onChanged;
 
   const FilterDrop({
-    Key? key,
+    super.key,
     required this.estadoSeleccionado,
     required this.onChanged,
-  }) : super(key: key);
+  });
 
   static const List<String> estados = [
     'Por Vencer',
@@ -137,7 +137,7 @@ class FilterDrop extends StatelessWidget {
                 icon: Icon(Icons.filter_list, color: theme.colorScheme.primary),
                 value: estadoSeleccionado ?? todosValor,
                 items: [
-                  DropdownMenuItem<String>(
+                  const DropdownMenuItem<String>(
                     value: todosValor,
                     child: Text('Todos'),
                   ),

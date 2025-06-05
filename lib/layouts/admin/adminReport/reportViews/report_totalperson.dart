@@ -1,4 +1,5 @@
 import 'package:basic_flutter/components/search_bar.dart';
+import 'package:basic_flutter/components/text_style.dart';
 import 'package:flutter/material.dart';
 
 // Datos mock para ejemplo
@@ -50,7 +51,18 @@ class _ReportTotalpersonState extends State<ReportTotalperson> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Total de Personas'),
+        leading: IconButton(
+          onPressed: () {
+            FocusScope.of(context).unfocus();
+            Navigator.pop(context);
+          },
+          icon: const Icon(Icons.arrow_back_ios),
+        ),
+        title: Text(
+          'Total de personas',
+          style: TextStyles.boldPrimaryText(context),
+        ),
+        centerTitle: true,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -93,7 +105,7 @@ class _ReportTotalpersonState extends State<ReportTotalperson> {
                                   style: TextStyle(
                                     fontWeight: FontWeight.w600,
                                     fontSize: 16,
-                                    color: theme.colorScheme.primary,
+                                    color: theme.colorScheme.onSurface,
                                   ),
                                 ),
                               ),
@@ -115,7 +127,6 @@ class _ReportTotalpersonState extends State<ReportTotalperson> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                // Botón PDF
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
@@ -124,32 +135,38 @@ class _ReportTotalpersonState extends State<ReportTotalperson> {
                       borderRadius: BorderRadius.circular(6),
                     ),
                   ),
-                  icon: const Icon(Icons.picture_as_pdf, size: 20),
+                  icon: const Icon(Icons.picture_as_pdf,
+                      size: 20, color: Colors.redAccent),
                   label: const Text('PDF',
-                      style: TextStyle(fontWeight: FontWeight.w600)),
+                      style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: Colors.redAccent)),
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                          content:
-                              Text('Generando PDF de $_selectedPeriodo')),
+                          content: Text('Generando PDF de $_selectedPeriodo')),
                     );
                   },
                 ),
                 const SizedBox(width: 12),
-                // Botón Excel
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 12, vertical: 14),
-                    backgroundColor: theme.colorScheme.secondary.withAlpha(50),
                     foregroundColor: theme.colorScheme.onSurface,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(6),
                     ),
                   ),
-                  icon: const Icon(Icons.file_copy, size: 20),
+                  icon: const Icon(
+                    Icons.file_copy,
+                    size: 20,
+                    color: Colors.lightGreen,
+                  ),
                   label: const Text('Excel',
-                      style: TextStyle(fontWeight: FontWeight.w600)),
+                      style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: Colors.lightGreen)),
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(

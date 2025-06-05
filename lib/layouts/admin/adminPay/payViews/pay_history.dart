@@ -4,6 +4,8 @@ import 'widgets/payment_details_modal.dart';
 import '../../../../components/search_bar.dart';
 
 class PayHistory extends StatefulWidget {
+  const PayHistory({super.key});
+
   @override
   _PayHistoryState createState() => _PayHistoryState();
 }
@@ -96,14 +98,14 @@ class _PayHistoryState extends State<PayHistory> {
             ),
             Expanded(
               child: filteredPayments.isEmpty
-                  ? Center(
+                  ? const Center(
                       child: Text(
                         'No se encontraron pagos',
                         style: TextStyle(fontSize: 16),
                       ),
                     )
                   : ListView.builder(
-                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                       itemCount: filteredPayments.length,
                       itemBuilder: (context, index) {
                         final payment = filteredPayments[index];

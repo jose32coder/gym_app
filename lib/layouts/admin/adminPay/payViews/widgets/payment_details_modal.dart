@@ -4,7 +4,7 @@ class PaymentDetailsModal extends StatelessWidget {
   final Map<String, dynamic> payment;
   final VoidCallback onClose;
 
-  const PaymentDetailsModal({
+  const PaymentDetailsModal({super.key, 
     required this.payment,
     required this.onClose,
   });
@@ -51,11 +51,11 @@ class PaymentDetailsModal extends StatelessWidget {
         child: GestureDetector(
           onTap: () {}, // evitar cerrar al tocar dentro
           child: Card(
-            margin: EdgeInsets.symmetric(horizontal: 32),
+            margin: const EdgeInsets.symmetric(horizontal: 32),
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             child: Padding(
-              padding: EdgeInsets.all(24),
+              padding: const EdgeInsets.all(24),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -67,7 +67,7 @@ class PaymentDetailsModal extends StatelessWidget {
                       color: theme.primaryColor,
                     ),
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
                   _buildDetailRow('Nombre', payment['nombre']),
                   _buildDetailRow('Monto', '\$${payment['monto'].toStringAsFixed(2)}'),
@@ -75,33 +75,33 @@ class PaymentDetailsModal extends StatelessWidget {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      const Text(
                         'Tipo de Pago: ',
                         style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                       ),
                       _getPaymentIcon(payment['tipoPago'], theme.primaryColor),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           payment['tipoPago'],
-                          style: TextStyle(fontSize: 16),
+                          style: const TextStyle(fontSize: 16),
                         ),
                       ),
                     ],
                   ),
-                  SizedBox(height: 12),
+                  const SizedBox(height: 12),
                   _buildDetailRow(
                     'Referencia',
                     payment['referencia'] ?? 'Sin referencia',
                   ),
-                  SizedBox(height: 24),
+                  const SizedBox(height: 24),
 
                   ElevatedButton(
                     onPressed: onClose,
-                    child: Text('Cerrar'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: theme.primaryColor,
                     ),
+                    child: const Text('Cerrar'),
                   ),
                 ],
               ),
@@ -114,18 +114,18 @@ class PaymentDetailsModal extends StatelessWidget {
 
   Widget _buildDetailRow(String label, String value) {
     return Padding(
-      padding: EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             '$label: ',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
           Expanded(
             child: Text(
               value,
-              style: TextStyle(fontSize: 16),
+              style: const TextStyle(fontSize: 16),
             ),
           ),
         ],

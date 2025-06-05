@@ -43,12 +43,12 @@ class _PayRegisterState extends State<PayRegister> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     'Datos del registro',
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
         
-                  SizedBox(
+                  const SizedBox(
                     height: 20,
                   ),
                   // Cedula
@@ -100,7 +100,7 @@ class _PayRegisterState extends State<PayRegister> {
                   const SizedBox(height: 30),
         
                   // Widget de Membresía
-                  Membership(pagoInmediato: true),
+                 const Membership(),
                 ],
               ),
             ),

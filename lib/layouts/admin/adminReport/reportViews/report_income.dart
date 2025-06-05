@@ -1,4 +1,5 @@
 import 'package:basic_flutter/components/search_bar.dart';
+import 'package:basic_flutter/components/text_style.dart';
 import 'package:flutter/material.dart';
 
 final ingresosMock = List.generate(
@@ -51,12 +52,23 @@ class _ReportIncomeState extends State<ReportIncome> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return SafeArea(
-      top: false,
-      bottom: true,
-      child: Scaffold(
-        appBar: AppBar(title: const Text('Ingresos por Periodo')),
-        body: Padding(
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          onPressed: () {
+            FocusScope.of(context).unfocus();
+            Navigator.pop(context);
+          },
+          icon: const Icon(Icons.arrow_back_ios),
+        ),
+        title: Text(
+          'Ingresos por periodo',
+          style: TextStyles.boldPrimaryText(context),
+        ),
+        centerTitle: true,
+      ),
+      body: SafeArea(
+        child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
@@ -96,7 +108,7 @@ class _ReportIncomeState extends State<ReportIncome> {
                                     style: TextStyle(
                                       fontWeight: FontWeight.w600,
                                       fontSize: 16,
-                                      color: theme.colorScheme.primary,
+                                      color: theme.colorScheme.onSurface,
                                     ),
                                   ),
                                 ),
@@ -118,7 +130,7 @@ class _ReportIncomeState extends State<ReportIncome> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  // Botón PDF
+                
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
@@ -127,9 +139,13 @@ class _ReportIncomeState extends State<ReportIncome> {
                         borderRadius: BorderRadius.circular(6),
                       ),
                     ),
-                    icon: const Icon(Icons.picture_as_pdf, size: 20),
-                    label: const Text('PDF',
-                        style: TextStyle(fontWeight: FontWeight.w600)),
+                    icon: const Icon(Icons.picture_as_pdf,
+                        size: 20, color: Colors.redAccent),
+                    label: const Text(
+                      'PDF',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w600, color: Colors.redAccent),
+                    ),
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -139,22 +155,19 @@ class _ReportIncomeState extends State<ReportIncome> {
                     },
                   ),
                   const SizedBox(width: 12),
-                  // Botón Excel
+                  
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
-                       padding: const EdgeInsets.symmetric(
+                      padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 14),
-                      backgroundColor:
-                          theme.colorScheme.secondary.withAlpha(50),
                       foregroundColor: theme.colorScheme.onSurface,
-                      
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(6),
                       ),
                     ),
-                    icon: const Icon(Icons.file_copy, size: 20),
+                    icon: const Icon(Icons.file_copy, size: 20, color: Colors.lightGreen,),
                     label: const Text('Excel',
-                        style: TextStyle(fontWeight: FontWeight.w600)),
+                        style: TextStyle(fontWeight: FontWeight.w600, color: Colors.lightGreen)),
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(

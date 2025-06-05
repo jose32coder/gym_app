@@ -1,4 +1,5 @@
 import 'package:basic_flutter/layouts/admin/administration.dart';
+import 'package:basic_flutter/layouts/preferences/preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:basic_flutter/layouts/home/home.dart';
 import 'package:basic_flutter/layouts/persons/add_person.dart';
@@ -17,7 +18,7 @@ class _NavigationMenuState extends State<NavigationMenu> {
     const Home(),
     const AddPersons(showMembresia: true,), // Mostrar Membresía solo en la vista "Agregar"
     const Administration(),
-    const Center(child: Text("Lista Personas")),
+    const Preferences(),
   ];
 
   @override
