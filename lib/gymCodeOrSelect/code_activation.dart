@@ -1,3 +1,4 @@
+import 'package:basic_flutter/components/button.dart';
 import 'package:basic_flutter/viewmodel/user_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -20,7 +21,7 @@ class _CodeActivationState extends State<CodeActivation> {
   bool _cargando = false;
 
   // Simulación de que el código es válido para mostrar el formulario
-  bool codigoValido = true; // Cambia a false para ocultar el formulario
+  bool codigoValido = false; // Cambia a false para ocultar el formulario
 
   void _validarYCrearGimnasio() async {
     if (!_formKey.currentState!.validate()) return;
@@ -53,15 +54,6 @@ class _CodeActivationState extends State<CodeActivation> {
       );
       return;
     }
-
-    // Aquí validamos que los campos del gimnasio estén llenos y creamos el gimnasio
-    await usuarioVM.crearGimnasio(
-      uid,
-      // nombre: _nombreController.text.trim(),
-      // direccion: _direccionController.text.trim(),
-      // telefono: _telefonoController.text.trim(),
-    );
-
     setState(() {
       _cargando = false;
     });
@@ -100,10 +92,52 @@ class _CodeActivationState extends State<CodeActivation> {
     );
   }
 
+  void _activar() async {
+    final usuarioVM = Provider.of<UserViewmodel>(context, listen: false);
+    final codigo = _codigoController.text.trim();
+
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Debes iniciar sesión para activar el código')),
+      );
+      return;
+    }
+    final uid = currentUser.uid;
+
+    if (codigo.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Por favor ingresa un código de activación')),
+      );
+      return;
+    }
+
+    setState(() {
+      _cargando = true;
+    });
+
+    final esValido = await usuarioVM.validarCodigoActivacion(codigo, uid);
+
+    setState(() {
+      _cargando = false;
+      codigoValido = esValido;
+    });
+
+    if (!esValido) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Código inválido o ya utilizado ❌')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final user = FirebaseAuth.instance.currentUser;
+    final uid = user?.uid;
 
     return Scaffold(
       appBar: AppBar(
@@ -112,6 +146,7 @@ class _CodeActivationState extends State<CodeActivation> {
         elevation: 0,
       ),
       body: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
@@ -130,7 +165,7 @@ class _CodeActivationState extends State<CodeActivation> {
               width: double.infinity,
               height: 50,
               child: ElevatedButton.icon(
-                onPressed: () {},
+                onPressed: _activar,
                 icon: Icon(
                   Icons.key,
                   color: isDarkMode
@@ -209,17 +244,16 @@ class _CodeActivationState extends State<CodeActivation> {
                     SizedBox(
                       width: double.infinity,
                       height: 50,
-                      child: ElevatedButton(
-                        onPressed: _cargando ? null : _validarYCrearGimnasio,
-                        child: _cargando
-                            ? const CircularProgressIndicator(
-                                color: Colors.white)
-                            : const Text(
-                                'Crear gimnasio',
-                                style: TextStyle(fontSize: 18),
-                              ),
+                      child: GuardarDatosButton(
+                        uid: uid ?? '',
+                        codigo: _codigoController.text.trim(),
+                        tipoUsuario: 'Dueño',
+                        nombreGimnasio: _nombreController.text.trim(),
+                        direccionGimnasio: _direccionController.text.trim(),
+                        telefonoGimnasio: _telefonoController.text.trim(),
+                        buttonText: 'Guardar Gimnasio',
                       ),
-                    ),
+                    )
                   ],
                 ),
               ),

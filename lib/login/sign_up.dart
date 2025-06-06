@@ -114,9 +114,6 @@ class _SignUpState extends State<SignUp> {
           password: _passwordController.text.trim(),
           name: _nameController.text.trim(),
           lastname: _lastnameController.text.trim(),
-          cedula: 'NTPA',
-          direccion: 'NTPA',
-          tipo: 'cliente', // o 'admin' si quieres según el contexto
         );
 
         if (authViewModel.errorMessage == null) {

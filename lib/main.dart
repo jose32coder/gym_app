@@ -43,6 +43,8 @@ void main() async {
   );
 }
 
+final authVM = AuthViewmodel();
+
 class MainApp extends StatelessWidget {
   const MainApp({super.key});
 
@@ -168,16 +170,16 @@ class MainApp extends StatelessWidget {
       supportedLocales: const [
         Locale('es', ''),
       ],
-      home: StreamBuilder<User?>(
-        stream: FirebaseAuth.instance.authStateChanges(),
+      home: StreamBuilder<Widget>(
+        stream: authVM.userScreenStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasData) {
-            return const NavigationMenu();
+            return snapshot.data!;
           }
-          return const SelectionRolPage();
+          return const SignIn();
         },
       ),
     );
