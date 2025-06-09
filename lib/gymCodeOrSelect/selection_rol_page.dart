@@ -2,6 +2,7 @@ import 'package:basic_flutter/components/text_style.dart';
 import 'package:basic_flutter/gymCodeOrSelect/code_activation.dart';
 import 'package:basic_flutter/gymCodeOrSelect/select_gym.dart';
 import 'package:basic_flutter/viewmodel/auth_viewmodel.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
@@ -14,6 +15,8 @@ class SelectionRolPage extends StatefulWidget {
 }
 
 bool isLoading = false;
+bool admin = false;
+
 
 class _SelectionRolPageState extends State<SelectionRolPage> {
   @override
@@ -92,7 +95,8 @@ class _SelectionRolPageState extends State<SelectionRolPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const SelectGym()),
+                            builder: (context) =>
+                                SelectGym(rol: 'Administrador')),
                       );
                     },
                   ),
@@ -112,7 +116,8 @@ class _SelectionRolPageState extends State<SelectionRolPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const SelectGym()),
+                            builder: (context) =>
+                                const SelectGym(rol: 'Cliente')),
                       );
                     },
                   ),
@@ -150,15 +155,18 @@ class _SelectionRolPageState extends State<SelectionRolPage> {
                             isLoading = true;
                           });
 
-                          await Future.delayed(
-                              const Duration(seconds: 1)); // simula carga
+                          await Future.delayed(const Duration(
+                              milliseconds: 500)); // simula carga
 
                           final authViewModel = Provider.of<AuthViewmodel>(
                               context,
                               listen: false);
-
-                          // Espera que termine el logout
                           await authViewModel.logout();
+
+                          // Esperar a que authStateChanges dispare null
+                          await FirebaseAuth.instance
+                              .authStateChanges()
+                              .firstWhere((user) => user == null);
 
                           if (mounted) {
                             setState(() {

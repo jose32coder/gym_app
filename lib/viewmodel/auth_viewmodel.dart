@@ -4,6 +4,7 @@ import 'package:basic_flutter/navigation_menu.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:rxdart/rxdart.dart';
 
 class AuthViewmodel extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -26,6 +27,25 @@ class AuthViewmodel extends ChangeNotifier {
   String? get tempName => _tempName;
   String? get tempLastname => _tempLastname;
   String? get tempEmail => _tempEmail;
+  
+
+  Future<Map<String, dynamic>?> obtenerDatosUsuario(String uid) async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('usuarios')
+          .doc(uid)
+          .get();
+      if (doc.exists) {
+        return doc.data();
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print('Error al obtener datos usuario: $e');
+      return null;
+    }
+  }
+
 
   Future<void> register({
     required String email,
@@ -161,36 +181,39 @@ class AuthViewmodel extends ChangeNotifier {
     await _auth.signOut();
   }
 
+  Stream<Widget> _singleValueStream(Widget widget) {
+    return Stream<Widget>.periodic(
+        const Duration(milliseconds: 1), (_) => widget).take(1);
+  }
+
   Stream<Widget> get userScreenStream {
-    return _auth.authStateChanges().asyncExpand((user) {
+    return _auth.authStateChanges().switchMap((user) {
       if (user == null) {
-        // Usuario no autenticado: muestra pantalla de login
+        // Usuario no autenticado
         return Stream.value(const SignIn());
       }
 
-      // Usuario autenticado: escucha el documento del perfil en Firestore
-      return _firestore
+      // Usuario autenticado — escuchamos su documento
+      final userDocStream = _firestore
           .collection('usuarios')
           .doc(user.uid)
           .snapshots()
           .map((doc) {
         if (!doc.exists) {
-          // No existe documento de perfil: puedes regresar a SignIn
-          // o a una pantalla para crear perfil si prefieres
           return const SignIn();
         }
 
-        final data = doc.data()!;
-        final codigo = data['codigo'] as String?;
+        final data = doc.data();
+        final codigo = data?['codigo'] as String?;
 
         if (codigo == null || codigo.isEmpty) {
-          // El usuario está autenticado pero no tiene rol asignado
           return const SelectionRolPage();
         }
 
-        // El usuario tiene rol asignado: navega a menú principal
         return const NavigationMenu();
       });
+
+      return userDocStream;
     });
   }
 }
