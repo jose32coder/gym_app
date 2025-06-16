@@ -27,7 +27,6 @@ class AuthViewmodel extends ChangeNotifier {
   String? get tempName => _tempName;
   String? get tempLastname => _tempLastname;
   String? get tempEmail => _tempEmail;
-  
 
   Future<Map<String, dynamic>?> obtenerDatosUsuario(String uid) async {
     try {
@@ -46,12 +45,13 @@ class AuthViewmodel extends ChangeNotifier {
     }
   }
 
-
   Future<void> register({
+    required String ced,
     required String email,
     required String password,
     required String name,
     required String lastname,
+      required String? sexo
   }) async {
     _isLoading = true;
     notifyListeners();
@@ -66,9 +66,11 @@ class AuthViewmodel extends ChangeNotifier {
 
       await saveBasicUserData(
         uid: cred.user!.uid,
+          ced: ced,
         email: email,
         name: name,
         lastname: lastname,
+          sexo: sexo
       );
 
       _errorMessage = null;
@@ -86,58 +88,22 @@ class AuthViewmodel extends ChangeNotifier {
   }
 
   Future<void> saveBasicUserData({
+    required String ced,
     required String uid,
     required String email,
     required String name,
     required String lastname,
+    required String? sexo,
   }) async {
     await _firestore.collection('usuarios').doc(uid).set({
       'uid': uid,
+      'ced': ced,
       'email': email,
       'nombre': name,
       'apellido': lastname,
-      'codigo': '', // vacío al inicio
+      'codigoGimnasio': '',
+      'sexo': sexo
     });
-  }
-
-  Future<void> saveUserDataToFirestore({
-    required String uid,
-    required String cedula,
-    required String direccion,
-    required String tipo,
-    required String tieneUsuario,
-    required String codigoGimnasio,
-  }) async {
-    _isLoading = true;
-    notifyListeners();
-
-    try {
-      await _firestore
-          .collection('usuarios')
-          .doc(codigoGimnasio)
-          .collection('usuarios')
-          .doc(uid)
-          .set({
-        'uid': uid,
-        'nombre': _tempName ?? '',
-        'apellido': _tempLastname ?? '',
-        'email': _tempEmail ?? '',
-        'cedula': cedula,
-        'direccion': direccion,
-        'tipo': tipo,
-        'tieneUsuario': tieneUsuario,
-        'codigoGimnasio': codigoGimnasio,
-      });
-
-      _errorMessage = null;
-      _successMessage = 'Datos guardados correctamente';
-    } catch (e) {
-      _errorMessage = 'Error al guardar datos: $e';
-      _successMessage = null;
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
   }
 
   Future<void> login(String email, String password) async {
@@ -181,11 +147,6 @@ class AuthViewmodel extends ChangeNotifier {
     await _auth.signOut();
   }
 
-  Stream<Widget> _singleValueStream(Widget widget) {
-    return Stream<Widget>.periodic(
-        const Duration(milliseconds: 1), (_) => widget).take(1);
-  }
-
   Stream<Widget> get userScreenStream {
     return _auth.authStateChanges().switchMap((user) {
       if (user == null) {
@@ -194,17 +155,19 @@ class AuthViewmodel extends ChangeNotifier {
       }
 
       // Usuario autenticado — escuchamos su documento
-      final userDocStream = _firestore
+      final userGymsStream = _firestore
           .collection('usuarios')
           .doc(user.uid)
+          .collection('gimnasios')
           .snapshots()
-          .map((doc) {
-        if (!doc.exists) {
-          return const SignIn();
+          .map((snapshot) {
+        if (snapshot.docs.isEmpty) {
+          return const SelectionRolPage();
         }
 
-        final data = doc.data();
-        final codigo = data?['codigo'] as String?;
+        // Puedes tomar el primer gimnasio, o iterar si quieres
+        final firstGymData = snapshot.docs.first.data();
+        final codigo = firstGymData['codigoGimnasio'] as String?;
 
         if (codigo == null || codigo.isEmpty) {
           return const SelectionRolPage();
@@ -213,7 +176,7 @@ class AuthViewmodel extends ChangeNotifier {
         return const NavigationMenu();
       });
 
-      return userDocStream;
+      return userGymsStream;
     });
   }
 }

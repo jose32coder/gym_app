@@ -1,86 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:basic_flutter/viewmodel/person_viewmodel.dart';
 
-class TablePersons extends StatelessWidget {
+class TablePersons extends StatefulWidget {
   const TablePersons({super.key});
 
-  // Datos de ejemplo
-  final List<Map<String, String>> personas = const [
-    {
-      "cedula": "V-12345678",
-      "nombre": "Carlos",
-      "apellido": "Pérez",
-      "direccion": "Calle Falsa 123",
-      "acciones": "Editar | Eliminar"
-    },
-    {
-      "cedula": "V-87654321",
-      "nombre": "Ana",
-      "apellido": "Gómez",
-      "direccion": "Avenida Siempre Viva 742",
-      "acciones": "Editar | Eliminar"
-    },
-    {
-      "cedula": "V-23456789",
-      "nombre": "Luis",
-      "apellido": "Mendoza",
-      "direccion": "Calle 9, Edificio A",
-      "acciones": "Editar | Eliminar"
-    },
-    {
-      "cedula": "V-24681357",
-      "nombre": "Luisa",
-      "apellido": "Martínez",
-      "direccion": "Plaza Central, Local 4",
-      "acciones": "Editar | Eliminar"
-    },
-    {
-      "cedula": "V-11223344",
-      "nombre": "Pedro",
-      "apellido": "López",
-      "direccion": "Calle 5, Casa 10",
-      "acciones": "Editar | Eliminar"
-    },
-    {
-      "cedula": "V-44332211",
-      "nombre": "María",
-      "apellido": "Hernández",
-      "direccion": "Boulevard Norte, Apt. 2",
-      "acciones": "Editar | Eliminar"
-    },
-    {
-      "cedula": "V-66778899",
-      "nombre": "Sofía",
-      "apellido": "Vargas",
-      "direccion": "Calle 12, 3° piso",
-      "acciones": "Editar | Eliminar"
-    },
-    {
-      "cedula": "V-99887766",
-      "nombre": "Lucas",
-      "apellido": "Morales",
-      "direccion": "Calle 3, Piso 1",
-      "acciones": "Editar | Eliminar"
-    },
-    {
-      "cedula": "V-55443322",
-      "nombre": "Paula",
-      "apellido": "Díaz",
-      "direccion": "Avenida 5, Edificio B",
-      "acciones": "Editar | Eliminar"
-    },
-    {
-      "cedula": "V-22334455",
-      "nombre": "Javier",
-      "apellido": "Luna",
-      "direccion": "Calle 7, Local 9",
-      "acciones": "Editar | Eliminar"
-    },
-  ];
+  @override
+  State<TablePersons> createState() => _TablePersonsState();
+}
+
+class _TablePersonsState extends State<TablePersons> {
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final personVM = Provider.of<PersonasViewModel>(context, listen: false);
+      personVM.cargarUsuarios();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final personVM = Provider.of<PersonasViewModel>(context);
+    final personas = personVM.usuarios;
 
     return SafeArea(
       child: SingleChildScrollView(
@@ -103,61 +48,63 @@ class TablePersons extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 20.0),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: TextField(
-                    decoration: InputDecoration(
-                      hintText: 'Buscar...',
-                      hintStyle: TextStyle(color: theme.hintColor),
-                      prefixIcon: Icon(
-                        Icons.search,
-                        color: theme.colorScheme.onSurface,
-                      ),
-                      filled: true,
-                      fillColor: isDark
-                          ? theme.colorScheme.surface
-                          : Colors.grey.shade100,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12.0),
-                        borderSide: BorderSide(
-                          color:  isDark
-                          ? theme.colorScheme.surface
-                          : Colors.grey.shade100,
+                if (personVM.isLoading)
+                  const Center(child: CircularProgressIndicator())
+                else if (personVM.tipoUsuario == 'Cliente')
+                  const Center(
+                      child: Text('No tienes acceso a esta información.'))
+                else ...[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: TextField(
+                      decoration: InputDecoration(
+                        hintText: 'Buscar...',
+                        hintStyle: TextStyle(color: theme.hintColor),
+                        prefixIcon: Icon(
+                          Icons.search,
+                          color: theme.colorScheme.onSurface,
+                        ),
+                        filled: true,
+                        fillColor: isDark
+                            ? theme.colorScheme.surface
+                            : Colors.grey.shade100,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.0),
+                          borderSide: BorderSide(
+                            color: isDark
+                                ? theme.colorScheme.surface
+                                : Colors.grey.shade100,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 20,),
-                PaginatedDataTable(
-                  columns: [
-                    DataColumn(
-                        label: Text('Cédula',
-                            style: TextStyle(
-                                color: theme.colorScheme.onSurface,
-                                fontWeight: FontWeight.w600))),
-                    DataColumn(
-                        label: Text('Nombre',
-                            style: TextStyle(
-                                color: theme.colorScheme.onSurface,
-                                fontWeight: FontWeight.w600))),
-                    DataColumn(
-                        label: Text('Dirección',
-                            style: TextStyle(
-                                color: theme.colorScheme.onSurface,
-                                fontWeight: FontWeight.w600))),
-                    DataColumn(
-                        label: Text('Acciones',
-                            style: TextStyle(
-                                color: theme.colorScheme.onSurface,
-                                fontWeight: FontWeight.w600))),
-                  ],
-                  source: _DataSource(personas, theme),
-                  rowsPerPage: 5,
-                  columnSpacing: 40,
-                  dataRowHeight: 60,
-                  dividerThickness: 0.5,
-                ),
+                  const SizedBox(height: 20),
+                  PaginatedDataTable(
+                    columns: [
+                      DataColumn(
+                          label: Text('Cédula',
+                              style: TextStyle(
+                                  color: theme.colorScheme.onSurface,
+                                  fontWeight: FontWeight.w600))),
+                      DataColumn(
+                          label: Text('Nombre',
+                              style: TextStyle(
+                                  color: theme.colorScheme.onSurface,
+                                  fontWeight: FontWeight.w600))),
+                      DataColumn(
+                          label: Text('Acciones',
+                              style: TextStyle(
+                                  color: theme.colorScheme.onSurface,
+                                  fontWeight: FontWeight.w600))),
+                    ],
+                    source: _DataSource(personas, personVM, theme),
+                    rowsPerPage: 5,
+                    columnSpacing: 40,
+                    dataRowHeight: 60,
+                    dividerThickness: 0.5,
+                  ),
+                ]
               ],
             ),
           ),
@@ -168,10 +115,11 @@ class TablePersons extends StatelessWidget {
 }
 
 class _DataSource extends DataTableSource {
-  final List<Map<String, String>> _personas;
+  final List<Map<String, dynamic>> _personas;
+  final PersonasViewModel _viewModel;
   final ThemeData theme;
 
-  _DataSource(this._personas, this.theme);
+  _DataSource(this._personas, this._viewModel, this.theme);
 
   @override
   DataRow getRow(int index) {
@@ -179,9 +127,9 @@ class _DataSource extends DataTableSource {
     return DataRow.byIndex(
       index: index,
       cells: [
-        DataCell(Text(persona['cedula']!)),
-        DataCell(Text('${persona['nombre']} ${persona['apellido']}')),
-        DataCell(Text(persona['direccion']!)),
+        DataCell(Text(persona['cedula'] ?? '')),
+        DataCell(
+            Text('${persona['nombre'] ?? ''} ${persona['apellido'] ?? ''}')),
         DataCell(Row(
           children: [
             IconButton(
@@ -193,7 +141,8 @@ class _DataSource extends DataTableSource {
             IconButton(
               icon: Icon(Icons.delete, color: Colors.red.shade400),
               onPressed: () {
-                print('Eliminar ${persona['nombre']}');
+                // Si tienes eliminarPersona en PersonViewModel
+                // _viewModel.eliminarPersona(index);
               },
             ),
           ],

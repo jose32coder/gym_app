@@ -1,6 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:basic_flutter/viewmodel/user_viewmodel.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:uuid/uuid.dart';
+import 'package:provider/provider.dart';
 
 class CodesAdminPage extends StatefulWidget {
   const CodesAdminPage({super.key});
@@ -10,19 +11,12 @@ class CodesAdminPage extends StatefulWidget {
 }
 
 class _CodesAdminPageState extends State<CodesAdminPage> {
-  final _firestore = FirebaseFirestore.instance;
-  final _uuid = const Uuid();
-
   Future<void> _generarCodigo() async {
-    final codigo = _uuid.v4().substring(0, 8).toUpperCase(); // ejemplo: 8 caracteres random
+    final userViewmodel = Provider.of<UserViewmodel>(context, listen: false);
 
-    await _firestore.collection('activacion-codigos').doc(codigo).set({
-      'codigo': codigo,
-      'usado': false,
-      'creadoEn': DateTime.now(),
-    });
+    final codigoGenerado = await userViewmodel.crearCodigo();
 
-    _mostrarCodigoDialog(codigo);
+    _mostrarCodigoDialog(codigoGenerado);
   }
 
   void _mostrarCodigoDialog(String codigo) {

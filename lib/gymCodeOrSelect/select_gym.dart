@@ -17,30 +17,14 @@ class SelectGym extends StatefulWidget {
 class _SelectGymState extends State<SelectGym> {
   String nombreUsuario = '';
   String apellidoUsuario = '';
+  String codigo = '';
+
+  final TextEditingController _codeController = TextEditingController();
   bool isLoading = false;
   final uid = FirebaseAuth.instance.currentUser!.uid;
 
-  Future<void> _onRegisterGym(String gimnasioId, String gymName) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Confirmación'),
-        content: Text('¿Estás seguro(a) que deseas unirte a "$gymName"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('No'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Sí'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed != true) return;
-
+  Future<void> _onRegisterGym(
+      String gimnasioId, String gymName, String code) async {
     setState(() => isLoading = true);
 
     try {
@@ -48,24 +32,33 @@ class _SelectGymState extends State<SelectGym> {
       final authVM = Provider.of<AuthViewmodel>(context, listen: false);
 
       final userData = await authVM.obtenerDatosUsuario(uid);
+      final gymData = await userVM.obtenerDatosGym(uid);
 
       if (userData != null) {
         nombreUsuario = userData['nombre'] ?? '';
         apellidoUsuario = userData['apellido'] ?? '';
       }
 
-      // Aquí ya no llamas obtenerCodigoGimnasio porque tienes el gimnasioId
+      if (gymData != null) {
+        codigo = gymData['codigo'] ?? '';
+      }
+
+      final isCodigoValido = await userVM.validarCodigoActivacion(code, uid);
+      if (!isCodigoValido) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Código inválido o ya usado')),
+        );
+        return;
+      }
+
       await userVM.registrarUsuarioEnGimnasio(
-        uid: uid,
+        usuarioId: uid,
         tipoUsuario: widget.rol,
         gimnasioId: gimnasioId,
-        nombre: nombreUsuario,
-        apellido: apellidoUsuario,
-        talla: null,
-        peso: null,
-        membresia: null,
-        pago: null,
+        codigoActivacion: _codeController.text.trim(),
       );
+
+      await userVM.marcarCodigoComoUsado(code, uid);
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Te has unido al gimnasio "$gymName"')),
@@ -78,7 +71,127 @@ class _SelectGymState extends State<SelectGym> {
       setState(() => isLoading = false);
     }
 
-    Navigator.pop(context);
+    Navigator.pop(context); // cerrar vista actual si aplica
+  }
+
+  void _showCodeDialog(BuildContext context, String gimnasioId, String nombre) {
+    String? errorText;
+    final theme = Theme.of(context);
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          // 👈 permite setState dentro del dialog
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Código de Registro'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Agrega el código de invitación del gimnasio para poder registrarte',
+                    style: TextStyle(fontSize: 14),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _codeController,
+                    decoration: InputDecoration(
+                      hintText: 'Código',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(
+                          color: errorText != null ? Colors.red : Colors.grey,
+                        ),
+                      ),
+                      prefixIcon: const Icon(Icons.lock_rounded),
+                      fillColor:
+                          isDarkMode ? Colors.grey.shade800 : Colors.white,
+                      filled: true,
+                      errorText: errorText, // 👈 se muestra debajo si existe
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text(
+                          'Cancelar',
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: isDarkMode
+                                ? theme.colorScheme.onSurface
+                                : theme.colorScheme.onInverseSurface,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(0, 45),
+                          backgroundColor: theme.colorScheme.primary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          final code = _codeController.text.trim();
+                          if (code.isEmpty) {
+                            setState(() {
+                              errorText = 'Debes ingresar un código';
+                            });
+                            return;
+                          }
+
+                          final userVM = Provider.of<UserViewmodel>(context,
+                              listen: false);
+                          final isCodigoValido =
+                              await userVM.validarCodigoActivacion(code, uid);
+
+                          if (!isCodigoValido) {
+                            setState(() {
+                              errorText = 'Código inválido o ya utilizado';
+                            });
+                            return;
+                          }
+
+                          // Si es válido, cerrar diálogo y registrar
+                          Navigator.of(context).pop();
+                          _onRegisterGym(gimnasioId, nombre, code);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(0, 45),
+                          backgroundColor: theme.colorScheme.primary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: Text(
+                          'Aceptar',
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: isDarkMode
+                                ? theme.colorScheme.onSurface
+                                : theme.colorScheme.onInverseSurface,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -161,14 +274,15 @@ class _SelectGymState extends State<SelectGym> {
                           width: double.infinity,
                           child: ElevatedButton(
                             onPressed: () =>
-                                _onRegisterGym(gimnasio.id, nombre),
+                                _showCodeDialog(context, gimnasio.id, nombre),
                             child: Text(
                               'Registrarse',
                               style: TextStyle(
-                                  fontSize: 16,
-                                  color: isDarkMode
-                                      ? theme.colorScheme.onSurface
-                                      : theme.colorScheme.onInverseSurface),
+                                fontSize: 16,
+                                color: isDarkMode
+                                    ? theme.colorScheme.onSurface
+                                    : theme.colorScheme.onInverseSurface,
+                              ),
                             ),
                             style: ElevatedButton.styleFrom(
                               minimumSize: const Size(double.infinity, 45),

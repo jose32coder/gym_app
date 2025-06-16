@@ -17,20 +17,26 @@ class _SignUpState extends State<SignUp> {
   final TextEditingController _lastnameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _cedController = TextEditingController();
 
   bool _obscurePassword = true;
   bool _acceptPolicy = false;
   bool isLoading = false;
+  int _currentStep = 0;
 
   late FocusNode _emailFocusNode;
   late FocusNode _passwordFocusNode;
   late FocusNode _nameFocusNode;
   late FocusNode _lastnameFocusNode;
+  late FocusNode _cedFocusNode;
 
   String? _emailError;
   String? _passwordError;
   String? _nameError;
+  String? _cedError;
   String? _lastnameError;
+  String? _selectedSexo;
+  String? _sexoError;
 
   @override
   void initState() {
@@ -38,6 +44,7 @@ class _SignUpState extends State<SignUp> {
     _emailFocusNode = FocusNode();
     _passwordFocusNode = FocusNode();
     _nameFocusNode = FocusNode();
+    _cedFocusNode = FocusNode();
     _lastnameFocusNode = FocusNode();
 
     // Escuchar pérdida de foco y validar
@@ -54,6 +61,13 @@ class _SignUpState extends State<SignUp> {
         setState(() {
           _passwordError =
               Validations.validatePassword(_passwordController.text);
+        });
+      }
+    });
+    _cedFocusNode.addListener(() {
+      if (!_cedFocusNode.hasFocus) {
+        setState(() {
+          _cedError = Validations.validateCed(_cedController.text);
         });
       }
     });
@@ -82,11 +96,32 @@ class _SignUpState extends State<SignUp> {
     super.dispose();
   }
 
+  bool _validateStep1() {
+    setState(() {
+      _cedError = Validations.validateCed(_cedController.text);
+      _nameError = Validations.validateName(_nameController.text);
+      _lastnameError = Validations.validateName(_lastnameController.text);
+      _sexoError = _selectedSexo == null ? 'Seleccione un sexo' : null;
+    });
+
+    return _cedError == null && _nameError == null && _lastnameError == null;
+  }
+
+  bool _validateStep2() {
+    setState(() {
+      _emailError = Validations.validateEmail(_emailController.text);
+      _passwordError = Validations.validatePassword(_passwordController.text);
+    });
+
+    return _emailError == null && _passwordError == null;
+  }
+
   void _register() async {
     final authViewModel = Provider.of<AuthViewmodel>(context, listen: false);
     setState(() {
       _emailError = Validations.validateEmail(_emailController.text);
       _passwordError = Validations.validatePassword(_passwordController.text);
+      _cedError = Validations.validateCed(_cedController.text);
       _nameError = Validations.validateName(_nameController.text);
       _lastnameError = Validations.validateName(_lastnameController.text);
     });
@@ -94,8 +129,10 @@ class _SignUpState extends State<SignUp> {
     if (_formKey.currentState!.validate() &&
         _emailError == null &&
         _passwordError == null &&
+        _cedError == null &&
         _nameError == null &&
-        _lastnameError == null) {
+        _lastnameError == null &&
+        _sexoError == null) {
       setState(() {
         isLoading = true;
       });
@@ -110,10 +147,12 @@ class _SignUpState extends State<SignUp> {
         await Future.delayed(const Duration(seconds: 1)); // demo
 
         await authViewModel.register(
+          ced: _cedController.text.trim(),
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
           name: _nameController.text.trim(),
           lastname: _lastnameController.text.trim(),
+          sexo: _selectedSexo,
         );
 
         if (authViewModel.errorMessage == null) {
@@ -148,6 +187,7 @@ class _SignUpState extends State<SignUp> {
   @override
   Widget build(BuildContext context) {
     bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
 
     InputDecoration inputDecoration(String hint, Icon icon) {
       return InputDecoration(
@@ -173,142 +213,301 @@ class _SignUpState extends State<SignUp> {
             child: Column(
               children: [
                 const SizedBox(height: 20),
-                const Column(
+                Column(
                   children: [
-                    Text('Hola,', style: TextStyle(fontSize: 20)),
-                    SizedBox(height: 5),
                     Text(
-                      'Registremos tu cuenta',
-                      style:
-                          TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
+                      _currentStep == 0 ? 'Hola,' : 'Ahora,',
+                      style: const TextStyle(fontSize: 20),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      _currentStep == 0
+                          ? 'Registremos tu cuenta'
+                          : 'Correo y contraseña',
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w700, fontSize: 20),
                     ),
                   ],
                 ),
                 const SizedBox(height: 40),
                 Form(
                   key: _formKey,
-                  child: Column(
-                    children: [
-                      TextFormField(
-                        controller: _nameController,
-                        focusNode: _nameFocusNode,
-                        decoration: inputDecoration(
-                          'Nombre',
-                          const Icon(Icons.person, size: 24),
-                        ).copyWith(
-                          errorText: _nameError,
-                        ),
-                        onChanged: (value) {
-                          setState(() {
-                            _nameError = Validations.validateName(value);
-                          });
-                        },
-                        validator: Validations.validateName,
-                      ),
-                      const SizedBox(height: 14),
-                      TextFormField(
-                        controller: _lastnameController,
-                        focusNode: _lastnameFocusNode,
-                        decoration: inputDecoration(
-                          'Apellido',
-                          const Icon(Icons.person_outline, size: 24),
-                        ).copyWith(
-                          errorText: _lastnameError,
-                        ),
-                        onChanged: (value) {
-                          setState(() {
-                            _lastnameError = Validations.validateName(value);
-                          });
-                        },
-                        validator: Validations.validateName,
-                      ),
-                      const SizedBox(height: 14),
-                      TextFormField(
-                        controller: _emailController,
-                        focusNode: _emailFocusNode,
-                        decoration: inputDecoration(
-                          'Correo o usuario',
-                          const Icon(Icons.email_rounded, size: 24),
-                        ).copyWith(
-                          errorText: _emailError,
-                        ),
-                        onChanged: (value) {
-                          setState(() {
-                            _emailError = Validations.validateEmail(value);
-                          });
-                        },
-                        validator: Validations.validateEmail,
-                      ),
-                      const SizedBox(height: 14),
-                      TextFormField(
-                        controller: _passwordController,
-                        focusNode: _passwordFocusNode,
-                        obscureText: _obscurePassword,
-                        decoration: inputDecoration(
-                          'Contraseña',
-                          const Icon(Icons.lock, size: 24),
-                        )
-                            .copyWith(
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _obscurePassword
-                                      ? Icons.visibility
-                                      : Icons.visibility_off,
-                                  size: 22,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 350),
+                    transitionBuilder:
+                        (Widget child, Animation<double> animation) {
+                      final inAnimation = Tween<Offset>(
+                        begin: const Offset(1, 0),
+                        end: Offset.zero,
+                      ).animate(animation);
+
+                      return SlideTransition(
+                        position: inAnimation,
+                        child: FadeTransition(opacity: animation, child: child),
+                      );
+                    },
+                    child: _currentStep == 0
+                        ? Column(
+                            key: const ValueKey<int>(0),
+                            children: [
+                              TextFormField(
+                                controller: _cedController,
+                                focusNode: _cedFocusNode,
+                                decoration: inputDecoration(
+                                  'Cédula',
+                                  const Icon(Icons.badge, size: 24),
+                                ).copyWith(
+                                  errorText: _cedError,
                                 ),
-                                onPressed: () {
+                                onChanged: (value) {
                                   setState(() {
-                                    _obscurePassword = !_obscurePassword;
+                                    _cedError = Validations.validateCed(value);
                                   });
                                 },
+                                autovalidateMode:
+                                    AutovalidateMode.onUserInteraction,
+                                validator: Validations.validateCed,
                               ),
-                            )
-                            .copyWith(
-                              errorText: _passwordError,
-                            ),
-                        onChanged: (value) {
-                          setState(() {
-                            _passwordError =
-                                Validations.validatePassword(value);
-                          });
-                        },
-                        validator: Validations.validatePassword,
-                      ),
-                      const SizedBox(height: 8),
-                      CheckboxListTile(
-                        value: _acceptPolicy,
-                        onChanged: (value) {
-                          setState(() {
-                            _acceptPolicy = value!;
-                          });
-                        },
-                        contentPadding: EdgeInsets.zero,
-                        title: const Text(
-                          'Acepto las políticas de privacidad',
-                          style: TextStyle(fontSize: 14),
-                        ),
-                        controlAffinity: ListTileControlAffinity.leading,
-                        dense: true,
-                      ),
-                    ],
+                              SizedBox(
+                                height: 14,
+                              ),
+                              TextFormField(
+                                controller: _nameController,
+                                focusNode: _nameFocusNode,
+                                decoration: inputDecoration(
+                                  'Nombre',
+                                  const Icon(Icons.person, size: 24),
+                                ).copyWith(
+                                  errorText: _nameError,
+                                ),
+                                onChanged: (value) {
+                                  setState(() {
+                                    _nameError =
+                                        Validations.validateName(value);
+                                  });
+                                },
+                                autovalidateMode:
+                                    AutovalidateMode.onUserInteraction,
+                                validator: Validations.validateName,
+                              ),
+                              const SizedBox(height: 14),
+                              TextFormField(
+                                controller: _lastnameController,
+                                focusNode: _lastnameFocusNode,
+                                decoration: inputDecoration(
+                                  'Apellido',
+                                  const Icon(Icons.person, size: 24),
+                                ).copyWith(
+                                  errorText: _lastnameError,
+                                ),
+                                onChanged: (value) {
+                                  setState(() {
+                                    _lastnameError =
+                                        Validations.validateName(value);
+                                  });
+                                },
+                                autovalidateMode:
+                                    AutovalidateMode.onUserInteraction,
+                                validator: Validations.validateName,
+                              ),
+                              SizedBox(
+                                height: 14,
+                              ),
+                              DropdownButtonFormField<String>(
+                                value: _selectedSexo,
+                                decoration: InputDecoration(
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10)),
+                                  filled: true,
+                                  fillColor: isDarkMode
+                                      ? Colors.grey.shade800
+                                      : Colors.white,
+                                  prefixIcon: const Icon(Icons.person_outline),
+                                  errorText: _sexoError,
+                                ),
+                                items: const [
+                                  DropdownMenuItem(
+                                      value: 'Masculino',
+                                      child: Text('Masculino')),
+                                  DropdownMenuItem(
+                                      value: 'Femenino',
+                                      child: Text('Femenino')),
+                                  DropdownMenuItem(
+                                      value: 'Otro', child: Text('Otro')),
+                                ],
+                                onChanged: (value) {
+                                  setState(() {
+                                    _selectedSexo = value;
+                                    _sexoError = null;
+                                  });
+                                },
+                              )
+                            ],
+                          )
+                        : Column(
+                            children: [
+                              TextFormField(
+                                controller: _emailController,
+                                focusNode: _emailFocusNode,
+                                decoration: inputDecoration(
+                                  'Correo',
+                                  const Icon(Icons.email_rounded, size: 24),
+                                ).copyWith(
+                                  errorText: _emailError,
+                                ),
+                                onChanged: (value) {
+                                  setState(() {
+                                    _emailError =
+                                        Validations.validateEmail(value);
+                                  });
+                                },
+                                autovalidateMode:
+                                    AutovalidateMode.onUserInteraction,
+                                validator: Validations.validateEmail,
+                              ),
+                              SizedBox(height: 14),
+                              TextFormField(
+                                controller: _passwordController,
+                                focusNode: _passwordFocusNode,
+                                obscureText: _obscurePassword,
+                                decoration: inputDecoration(
+                                  'Contraseña',
+                                  const Icon(Icons.lock, size: 24),
+                                )
+                                    .copyWith(
+                                      suffixIcon: IconButton(
+                                        icon: Icon(
+                                          _obscurePassword
+                                              ? Icons.visibility
+                                              : Icons.visibility_off,
+                                          size: 22,
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            _obscurePassword =
+                                                !_obscurePassword;
+                                          });
+                                        },
+                                      ),
+                                    )
+                                    .copyWith(
+                                      errorText: _passwordError,
+                                    ),
+                                onChanged: (value) {
+                                  setState(() {
+                                    _passwordError =
+                                        Validations.validatePassword(value);
+                                  });
+                                },
+                                autovalidateMode:
+                                    AutovalidateMode.onUserInteraction,
+                                validator: Validations.validatePassword,
+                              ),
+                              const SizedBox(height: 8),
+                              CheckboxListTile(
+                                value: _acceptPolicy,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _acceptPolicy = value!;
+                                  });
+                                },
+                                contentPadding: EdgeInsets.zero,
+                                title: const Text(
+                                  'Acepto las políticas de privacidad',
+                                  style: TextStyle(fontSize: 14),
+                                ),
+                                controlAffinity:
+                                    ListTileControlAffinity.leading,
+                                dense: true,
+                              ),
+                            ],
+                          ),
                   ),
                 ),
                 const Spacer(),
-                SizedBox(
-                  width: double.infinity,
-                  height: 55,
-                  child: ElevatedButton.icon(
-                    onPressed: _register,
-                    icon: const Icon(Icons.login),
-                    label: const Text(
-                      'Registrar',
-                      style: TextStyle(fontSize: 16),
+                Row(
+                  children: [
+                    if (_currentStep > 0)
+                      Expanded(
+                        child: SizedBox(
+                          height: 50,
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              setState(() {
+                                _currentStep--;
+                              });
+                            },
+                            icon: Icon(
+                              Icons.arrow_back,
+                              color: isDarkMode
+                                  ? theme.colorScheme.onSurface
+                                  : theme.colorScheme.onInverseSurface,
+                            ),
+                            label: Text(
+                              'Volver',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: isDarkMode
+                                    ? theme.colorScheme.onSurface
+                                    : theme.colorScheme.onInverseSurface,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: theme.colorScheme.secondary,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: SizedBox(
+                        height: 50,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            if (_currentStep == 0) {
+                              if (_validateStep1() &&
+                                  _formKey.currentState!.validate()) {
+                                setState(() {
+                                  _currentStep++;
+                                });
+                              }
+                            } else if (_currentStep == 1) {
+                              if (_validateStep2() &&
+                                  _formKey.currentState!.validate()) {
+                                _register();
+                              }
+                            }
+                          },
+                          icon: Icon(
+                            _currentStep == 0
+                                ? Icons.arrow_forward
+                                : Icons.login,
+                            color: isDarkMode
+                                ? theme.colorScheme.onSurface
+                                : theme.colorScheme.onInverseSurface,
+                          ),
+                          label: Text(
+                            _currentStep == 0 ? 'Siguiente' : 'Registrar',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: isDarkMode
+                                  ? theme.colorScheme.onSurface
+                                  : theme.colorScheme.onInverseSurface,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: theme.colorScheme.primary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 12),
-                    ),
-                  ),
+                  ],
                 ),
                 const SizedBox(height: 20),
                 const Row(

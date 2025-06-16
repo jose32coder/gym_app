@@ -16,7 +16,6 @@ class _NavigationMenuState extends State<NavigationMenu> {
 
   final List<Widget> _screens = [
     const Home(),
-    const AddPersons(showMembresia: true,), // Mostrar Membresía solo en la vista "Agregar"
     const Administration(),
     const Preferences(),
   ];
@@ -37,7 +36,6 @@ class _NavigationMenuState extends State<NavigationMenu> {
         },
         destinations: const [
           NavigationDestination(icon: Icon(Icons.home), label: 'Inicio'),
-          NavigationDestination(icon: Icon(Icons.add_circle), label: 'Agregar'),
           NavigationDestination(
               icon: Icon(Icons.admin_panel_settings), label: 'Admin'),
           NavigationDestination(

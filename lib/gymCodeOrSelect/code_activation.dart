@@ -1,3 +1,4 @@
+import 'package:basic_flutter/viewmodel/auth_viewmodel.dart';
 import 'package:basic_flutter/viewmodel/user_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -75,6 +76,72 @@ class _CodeActivationState extends State<CodeActivation> {
     if (!esValido) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Código inválido o ya utilizado ❌')),
+      );
+    }
+  }
+
+  void _crearGimnasio() async {
+    if (_nombreController.text.trim().isEmpty ||
+        _direccionController.text.trim().isEmpty ||
+        _telefonoController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Por favor completa todos los campos'),
+        ),
+      );
+      return;
+    }
+
+    final usuarioVM = Provider.of<UserViewmodel>(context, listen: false);
+
+    setState(() {
+      cargando = true;
+    });
+
+    final userData = await usuarioVM.obtenerDatosUsuario(uid);
+
+    if (userData == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No se encontraron datos del usuario')),
+      );
+      return;
+    }
+
+    // ⚠️ Aquí capturas el ID generado del gimnasio
+    final gimnasioId = await usuarioVM.crearGimnasioConCodigo(
+      uid: uid,
+      codigo: _codigoController.text.trim(),
+      nombreGimnasio: _nombreController.text.trim(),
+      direccionGimnasio: _direccionController.text.trim(),
+      telefonoGimnasio: _telefonoController.text.trim(),
+    );
+
+    // Validas que gimnasioId no sea null antes de continuar
+    if (gimnasioId != null) {
+      await usuarioVM.registrarUsuarioEnGimnasio(
+        gimnasioId: gimnasioId,
+        usuarioId: uid,
+        tipoUsuario: 'Dueño',
+        nombre: userData['nombre'],
+        apellido: userData['apellido'],
+      );
+
+      setState(() {
+        cargando = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Datos guardados correctamente ✅')),
+      );
+
+      Navigator.pop(context);
+    } else {
+      setState(() {
+        cargando = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error al crear gimnasio')),
       );
     }
   }
@@ -192,46 +259,7 @@ class _CodeActivationState extends State<CodeActivation> {
                       width: double.infinity,
                       height: 50,
                       child: ElevatedButton.icon(
-                        onPressed: () async {
-                          if (_nombreController.text.trim().isEmpty ||
-                              _direccionController.text.trim().isEmpty ||
-                              _telefonoController.text.trim().isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content:
-                                    Text('Por favor completa todos los campos'),
-                              ),
-                            );
-                            return;
-                          }
-
-                          final usuarioVM = Provider.of<UserViewmodel>(context,
-                              listen: false);
-
-                          setState(() {
-                            cargando = true;
-                          });
-
-                          await usuarioVM.crearGimnasioConCodigo(
-                            uid: uid,
-                            codigo: _codigoController.text.trim(),
-                            nombreGimnasio: _nombreController.text.trim(),
-                            direccionGimnasio: _direccionController.text.trim(),
-                            telefonoGimnasio: _telefonoController.text.trim(),
-                          );
-
-                          setState(() {
-                            cargando = false;
-                          });
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content:
-                                    Text('Datos guardados correctamente ✅')),
-                          );
-
-                          Navigator.pop(context);
-                        },
+                        onPressed: _crearGimnasio,
                         icon: Icon(
                           Icons.save,
                           color: isDarkMode

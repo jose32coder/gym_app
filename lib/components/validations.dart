@@ -53,32 +53,28 @@ class Validations {
     return null;
   }
 
-
   static String? validateCed(String? value) {
-  if (value == null || value.isEmpty) {
-    return 'La cédula es requerida';
+    if (value == null || value.isEmpty) {
+      return 'La cédula es requerida';
+    }
+
+    // Limpiar: eliminar espacios y convertir a mayúsculas
+    String cleanValue = value.replaceAll(' ', '').toUpperCase();
+
+    final regex = RegExp(r'^(?:[VE]?)?\d{7,9}$');
+
+    if (!regex.hasMatch(cleanValue)) {
+      return 'Cédula inválida. Ej: V12345678 o 12345678';
+    }
+
+    return null;
   }
 
-  // Limpiar: eliminar espacios y convertir a mayúsculas
-  String cleanValue = value.replaceAll(' ', '').toUpperCase();
+  static String? validateSex(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Selecciona un sexo';
+    }
 
-  final regex = RegExp(r'^(?:[VE]?)?\d{7,9}$');
-
-  if (!regex.hasMatch(cleanValue)) {
-    return 'Cédula inválida. Ej: V12345678 o 12345678';
+    return null;
   }
-
-  return null; 
-}
-
-  static String? validateDir(String? value) {
-  if (value == null || value.isEmpty) {
-    return 'La dirección es requerida';
-  }
-
-  return null; 
-}
-
-
-
 }

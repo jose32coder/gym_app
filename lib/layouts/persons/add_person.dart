@@ -7,8 +7,9 @@ import 'package:basic_flutter/layouts/persons/widgets/textformfield.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class AddPersons extends StatelessWidget {
-  final bool showMembresia;
-  const AddPersons({super.key, required this.showMembresia});
+  const AddPersons({
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {

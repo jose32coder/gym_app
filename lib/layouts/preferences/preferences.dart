@@ -1,6 +1,7 @@
 import 'package:basic_flutter/components/notification_modal.dart';
 import 'package:basic_flutter/components/text_style.dart';
 import 'package:basic_flutter/layouts/preferences/preferencesView/aboutViews/pref_about_app.dart';
+import 'package:basic_flutter/layouts/preferences/preferencesView/createCode/create_code.dart';
 import 'package:basic_flutter/layouts/preferences/preferencesView/pref_account_and_data.dart';
 import 'package:basic_flutter/layouts/preferences/preferencesView/pref_notifications.dart';
 import 'package:basic_flutter/layouts/preferences/preferencesView/securityViews/pref_security.dart';
@@ -137,12 +138,12 @@ class _PreferencesState extends State<Preferences> {
                                   ),
                                   PreferenceCard(
                                     icon: Icons.info,
-                                    title: 'Sobre la aplicación',
+                                    title: 'Crear codigo usuario',
                                     onTap: () => Navigator.push(
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) =>
-                                            const PrefAboutApp(),
+                                            const CreateCode(),
                                       ),
                                     ),
                                   ),

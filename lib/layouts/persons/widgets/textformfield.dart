@@ -22,20 +22,20 @@ class _TextFormPageState extends State<TextFormPage> {
   final TextEditingController _cedController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _lastnameController = TextEditingController();
-  final TextEditingController _directionController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
 
   // FocusNodes para detectar pérdida de foco
   late FocusNode _cedFocusNode;
   late FocusNode _nameFocusNode;
   late FocusNode _lastnameFocusNode;
-  late FocusNode _directionFocusNode;
+  late FocusNode _emailFocusNode;
 
   bool isLoading = false;
   // Variables para almacenar mensajes de error en tiempo real
   String? _cedError;
   String? _nameError;
   String? _lastnameError;
-  String? _directionError;
+  String? _emailError;
 
   @override
   void initState() {
@@ -43,7 +43,7 @@ class _TextFormPageState extends State<TextFormPage> {
     _cedFocusNode = FocusNode();
     _nameFocusNode = FocusNode();
     _lastnameFocusNode = FocusNode();
-    _directionFocusNode = FocusNode();
+    _emailFocusNode = FocusNode();
 
     // Escuchar pérdida de foco y validar
     _cedFocusNode.addListener(() {
@@ -68,10 +68,10 @@ class _TextFormPageState extends State<TextFormPage> {
         });
       }
     });
-    _directionFocusNode.addListener(() {
-      if (!_directionFocusNode.hasFocus) {
+    _emailFocusNode.addListener(() {
+      if (!_emailFocusNode.hasFocus) {
         setState(() {
-          _directionError = Validations.validateDir(_directionController.text);
+          _emailError = Validations.validateEmail(_emailController.text);
         });
       }
     });
@@ -82,11 +82,11 @@ class _TextFormPageState extends State<TextFormPage> {
     _cedFocusNode.dispose();
     _nameFocusNode.dispose();
     _lastnameFocusNode.dispose();
-    _directionFocusNode.dispose();
+    _emailFocusNode.dispose();
     _cedController.dispose();
     _nameController.dispose();
     _lastnameController.dispose();
-    _directionController.dispose();
+    _emailController.dispose();
     super.dispose();
   }
 
@@ -97,7 +97,7 @@ class _TextFormPageState extends State<TextFormPage> {
       cedula: _cedController.text.trim(),
       nombre: _nameController.text.trim(),
       apellido: _lastnameController.text.trim(),
-      direccion: _directionController.text.trim(),
+      email: _emailController.text.trim(),
       tipo: 'cliente',
       tieneUsuario: 'no',
     );
@@ -108,14 +108,14 @@ class _TextFormPageState extends State<TextFormPage> {
       _cedError = Validations.validateCed(_cedController.text);
       _nameError = Validations.validateName(_nameController.text);
       _lastnameError = Validations.validateName(_lastnameController.text);
-      _directionError = Validations.validateDir(_directionController.text);
+      _emailError = Validations.validateEmail(_emailController.text);
     });
 
     if (_formKey.currentState!.validate() &&
         _cedError == null &&
         _nameError == null &&
         _lastnameError == null &&
-        _directionError == null) {
+        _emailError == null) {
       setState(() {
         isLoading = true;
       });
@@ -240,23 +240,63 @@ class _TextFormPageState extends State<TextFormPage> {
           const GeneroSelector(),
           const SizedBox(height: 20),
           Text(
-            'Dirección',
+            'Correo',
             style: TextStyles.boldText(context),
           ),
           const SizedBox(height: 5),
           TextFormField(
-            controller: _directionController,
-            focusNode: _directionFocusNode,
+            controller: _emailController,
+            focusNode: _emailFocusNode,
             decoration: InputDecoration(
-              hintText: 'Introduce la dirección...',
+              hintText: 'Correo',
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
-              prefixIcon: const Icon(Icons.location_on_sharp),
+              prefixIcon: const Icon(Icons.email_rounded),
               fillColor: isDarkMode ? Colors.grey.shade800 : Colors.white,
               filled: true,
-            ).copyWith(errorText: _directionError),
-            validator: Validations.validateDir,
+            ).copyWith(errorText: _emailError),
+            validator: Validations.validateEmail,
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Contraseña',
+            style: TextStyles.boldText(context),
+          ),
+          const SizedBox(height: 5),
+          TextFormField(
+            controller: _emailController,
+            focusNode: _emailFocusNode,
+            decoration: InputDecoration(
+              hintText: 'Contreaseña',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              prefixIcon: const Icon(Icons.lock_rounded),
+              fillColor: isDarkMode ? Colors.grey.shade800 : Colors.white,
+              filled: true,
+            ).copyWith(errorText: _emailError),
+            validator: Validations.validatePassword,
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Codigo',
+            style: TextStyles.boldText(context),
+          ),
+          const SizedBox(height: 5),
+          TextFormField(
+            controller: _emailController,
+            focusNode: _emailFocusNode,
+            decoration: InputDecoration(
+              hintText: 'Codigo',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              prefixIcon: const Icon(Icons.qr_code),
+              fillColor: isDarkMode ? Colors.grey.shade800 : Colors.white,
+              filled: true,
+            ).copyWith(errorText: _emailError),
+            validator: Validations.validateEmail,
           ),
           const SizedBox(height: 30),
           SizedBox(

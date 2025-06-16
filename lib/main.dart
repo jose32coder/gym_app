@@ -5,6 +5,7 @@ import 'package:basic_flutter/login/sign_in.dart';
 import 'package:basic_flutter/login/sign_up.dart';
 import 'package:basic_flutter/navigation_menu.dart';
 import 'package:basic_flutter/viewmodel/auth_viewmodel.dart';
+import 'package:basic_flutter/viewmodel/person_viewmodel.dart';
 import 'package:basic_flutter/viewmodel/user_viewmodel.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -37,6 +38,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthViewmodel()),
         ChangeNotifierProvider(create: (_) => UserViewmodel()),
+        ChangeNotifierProvider(create: (_) => PersonasViewModel())
       ],
       child: const MainApp(),
     ),

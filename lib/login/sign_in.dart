@@ -75,7 +75,7 @@ class _SignInState extends State<SignIn> {
 
       try {
         await Future.delayed(const Duration(seconds: 1));
-        
+
         await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
@@ -117,6 +117,7 @@ class _SignInState extends State<SignIn> {
   @override
   Widget build(BuildContext context) {
     bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -228,17 +229,30 @@ class _SignInState extends State<SignIn> {
                     const Spacer(),
                     SizedBox(
                       width: double.infinity,
-                      height: 55,
+                      height: 50,
                       child: ElevatedButton.icon(
                         onPressed: _login,
-                        icon: const Icon(Icons.login),
-                        label: const Text(
-                          'Ingresar',
-                          style: TextStyle(fontSize: 16),
+                        icon: Icon(
+                          Icons.login,
+                          color: isDarkMode
+                              ? theme.colorScheme.onSurface
+                              : theme.colorScheme.onInverseSurface,
+                        ),
+                        label: Text(
+                          'Iniciar sesión',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: isDarkMode
+                                ? theme.colorScheme.onSurface
+                                : theme.colorScheme.onInverseSurface,
+                          ),
                         ),
                         style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 24, vertical: 12),
+                          minimumSize: const Size(double.infinity, 45),
+                          backgroundColor: theme.colorScheme.primary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
                       ),
                     ),
