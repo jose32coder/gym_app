@@ -2,7 +2,6 @@
 import 'package:basic_flutter/components/notification_modal.dart';
 import 'package:basic_flutter/components/text_style.dart';
 import 'package:flutter/material.dart';
-import 'package:basic_flutter/layouts/persons/widgets/image_selector.dart';
 import 'package:basic_flutter/layouts/persons/widgets/textformfield.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -19,7 +18,7 @@ class AddPersons extends StatelessWidget {
           'Datos Personales',
           style: TextStyles.boldPrimaryText(context),
         ),
-        centerTitle: false,
+        centerTitle: true,
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 10),
@@ -46,8 +45,6 @@ class AddPersons extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Imageselector(),
-              SizedBox(height: 30),
               TextFormPage(),
             ],
           ),

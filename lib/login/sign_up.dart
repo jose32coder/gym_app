@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:basic_flutter/components/validations.dart';
 import 'package:flutter/material.dart';
 import 'package:basic_flutter/login/sign_in.dart';
@@ -101,7 +103,7 @@ class _SignUpState extends State<SignUp> {
       _cedError = Validations.validateCed(_cedController.text);
       _nameError = Validations.validateName(_nameController.text);
       _lastnameError = Validations.validateName(_lastnameController.text);
-      _sexoError = _selectedSexo == null ? 'Seleccione un sexo' : null;
+      _sexoError = _selectedSexo == null ? 'Debes seleccionar un sexo' : null;
     });
 
     return _cedError == null && _nameError == null && _lastnameError == null;
@@ -326,6 +328,9 @@ class _SignUpState extends State<SignUp> {
                                   errorText: _sexoError,
                                 ),
                                 items: const [
+                                  DropdownMenuItem(
+                                      value: null,
+                                      child: Text('Selecciona un sexo')),
                                   DropdownMenuItem(
                                       value: 'Masculino',
                                       child: Text('Masculino')),

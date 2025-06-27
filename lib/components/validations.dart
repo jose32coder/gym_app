@@ -53,6 +53,24 @@ class Validations {
     return null;
   }
 
+  static String? validatePrice(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'El precio es obligatorio';
+    }
+    final numValue = num.tryParse(value);
+    if (numValue == null || numValue <= 0) {
+      return 'Debe ser un número mayor a 0';
+    }
+    return null;
+  }
+
+  static String? validatePromotionName(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'El nombre de la promoción es obligatorio';
+    }
+    return null;
+  }
+
   static String? validateCed(String? value) {
     if (value == null || value.isEmpty) {
       return 'La cédula es requerida';
@@ -75,6 +93,21 @@ class Validations {
       return 'Selecciona un sexo';
     }
 
+    return null;
+  }
+
+  static String? validateTipoMember(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Selecciona una membresía';
+    }
+
+    return null;
+  }
+
+  static String? validateCode(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Codigo vacío';
+    }
     return null;
   }
 }

@@ -1,4 +1,3 @@
-import 'package:basic_flutter/viewmodel/auth_viewmodel.dart';
 import 'package:basic_flutter/viewmodel/user_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -116,7 +115,6 @@ class _CodeActivationState extends State<CodeActivation> {
       telefonoGimnasio: _telefonoController.text.trim(),
     );
 
-    // Validas que gimnasioId no sea null antes de continuar
     if (gimnasioId != null) {
       await usuarioVM.registrarUsuarioEnGimnasio(
         gimnasioId: gimnasioId,
@@ -124,6 +122,7 @@ class _CodeActivationState extends State<CodeActivation> {
         tipoUsuario: 'Dueño',
         nombre: userData['nombre'],
         apellido: userData['apellido'],
+        cedula: userData['cedula'],
       );
 
       setState(() {

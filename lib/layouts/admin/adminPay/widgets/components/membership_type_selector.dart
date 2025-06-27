@@ -28,8 +28,8 @@ class MembershipTypeSelector extends StatelessWidget {
       ),
       items: [
         const DropdownMenuItem(
-          value: '',
-          child: Text('Selecciona el tipo de membresía'),
+          value: 'Selecciona una membresía',
+          child: Text('Selecciona una membresía'),
         ),
         ...membershipTypes.map(
           (item) => DropdownMenuItem(value: item, child: Text(item)),

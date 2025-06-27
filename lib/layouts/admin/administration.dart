@@ -1,5 +1,5 @@
 import 'package:basic_flutter/components/notification_modal.dart';
-import 'package:basic_flutter/layouts/admin/adminMember/admin_member.dart';
+import 'package:basic_flutter/layouts/admin/adminMemberAndPromos/admin_mainscreen.dart';
 import 'package:basic_flutter/layouts/admin/widgets/admin_cards.dart';
 import 'package:basic_flutter/components/text_style.dart';
 import 'package:basic_flutter/layouts/admin/adminReport/admin_report.dart';
@@ -15,7 +15,10 @@ class Administration extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Administración', style: TextStyles.boldPrimaryText(context),),
+        title: Text(
+          'Administración',
+          style: TextStyles.boldPrimaryText(context),
+        ),
         centerTitle: false,
         actions: [
           Padding(
@@ -49,41 +52,51 @@ class Administration extends StatelessWidget {
                 imagePath: 'assets/images/fondo1.jpg',
                 onPressed: () {
                   Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const AdminPer()));
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const AdminPer()));
                 },
               ),
-              const SizedBox(height: 10,),
+              const SizedBox(
+                height: 10,
+              ),
               AdminCard(
                 title: 'Membresías',
                 subtitle: 'Listado de membresías del gimnasio',
                 imagePath: 'assets/images/fondo2.jpg',
                 onPressed: () {
                   Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const AdminMember()));
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const AdminMainScreen()));
                 },
               ),
-              const SizedBox(height: 10,),
+              const SizedBox(
+                height: 10,
+              ),
               AdminCard(
                 title: 'Pagos',
                 subtitle: 'Administración de pagos generales',
                 imagePath: 'assets/images/fondo4.jpg',
                 onPressed: () {
                   Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const AdminPay()));
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const AdminPay()));
                 },
               ),
-               const SizedBox(height: 10,),
+              const SizedBox(
+                height: 10,
+              ),
               AdminCard(
                 title: 'Reportes',
                 subtitle: 'Listado de reportes generales',
                 imagePath: 'assets/images/fondo3.jpg',
                 onPressed: () {
                   Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const AdminReport()));
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const AdminReport()));
                 },
               ),
             ],

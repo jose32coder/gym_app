@@ -1,7 +1,7 @@
-import 'package:basic_flutter/models/user_register_models.dart';
 import 'package:basic_flutter/services/gimnasio_services.dart';
 import 'package:basic_flutter/services/users_services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class UserViewmodel extends ChangeNotifier {
@@ -69,46 +69,53 @@ class UserViewmodel extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
+    final batch = _firestore.batch();
+
     try {
       bool codigoValido =
           await _gimnasioService.validarCodigoActivacion(codigo, uid);
-      if (!codigoValido) {
-        throw Exception('Código inválido o ya usado');
-      }
+      if (!codigoValido) throw Exception('Código inválido o ya usado');
 
-      await _gimnasioService.marcarCodigoComoUsado(codigo, uid);
+      // Obtener referencia de nuevo gimnasio
+      final gimnasioRef = _firestore.collection('gimnasios').doc();
 
-      final gimnasioId = await _gimnasioService.crearGimnasio(
-        nombre: nombreGimnasio,
-        direccion: direccionGimnasio,
-        telefono: telefonoGimnasio,
-        propietarioUid: uid,
-        codigo: codigo,
-      );
+      // Crear gimnasio en batch
+      batch.set(gimnasioRef, {
+        'nombre': nombreGimnasio,
+        'direccion': direccionGimnasio,
+        'telefono': telefonoGimnasio,
+        'propietario': uid,
+        'codigo': codigo,
+        'creadoEn': FieldValue.serverTimestamp(),
+      });
 
-      // Actualizar código y tipo de usuario en el documento principal de usuarios
-      await _firestore.collection('usuarios').doc(uid).update({
+      // Actualizar usuario en batch
+      final usuarioRef = _firestore.collection('usuarios').doc(uid);
+      batch.update(usuarioRef, {
         'codigoGimnasio': codigo,
         'tipo': 'Dueño',
       });
 
-      // Crear relación en subcolección de gimnasios del usuario
-      await _firestore
-          .collection('usuarios')
-          .doc(uid)
-          .collection('gimnasios')
-          .doc(gimnasioId)
-          .set({
+      // Crear subcolección de gimnasios dentro del usuario
+      final usuarioGimnasioRef =
+          usuarioRef.collection('gimnasios').doc(gimnasioRef.id);
+      batch.set(usuarioGimnasioRef, {
         'nombreGimnasio': nombreGimnasio,
         'tipoUsuario': 'Dueño',
         'codigoGimnasio': codigo,
         'fechaRegistro': FieldValue.serverTimestamp(),
       });
 
+      // Marcar código como usado
+      await _gimnasioService.marcarCodigoComoUsado(codigo, uid);
+
+      // Ejecutar batch
+      await batch.commit();
+
       _errorMessage = null;
       _successMessage = 'Gimnasio creado correctamente';
 
-      return gimnasioId;
+      return gimnasioRef.id;
     } catch (e) {
       _errorMessage = e.toString();
       _successMessage = null;
@@ -130,7 +137,7 @@ class UserViewmodel extends ChangeNotifier {
     double? peso,
     String? membresia,
     double? pago,
-    String? codigoActivacion, // ← aquí
+    String? codigoActivacion,
   }) async {
     _isLoading = true;
     notifyListeners();
@@ -138,14 +145,12 @@ class UserViewmodel extends ChangeNotifier {
     try {
       final userDoc =
           await _firestore.collection('usuarios').doc(usuarioId).get();
-
       if (!userDoc.exists) {
         throw Exception('Usuario no encontrado');
       }
 
       final gimnasioDoc =
           await _firestore.collection('gimnasios').doc(gimnasioId).get();
-
       if (!gimnasioDoc.exists) {
         throw Exception('Gimnasio no encontrado');
       }
@@ -154,7 +159,6 @@ class UserViewmodel extends ChangeNotifier {
           gimnasioDoc.data()?['nombre'] ?? 'Nombre no disponible';
       final codigoDesdeGimnasio = gimnasioDoc.data()?['codigo'] ?? 'Sin código';
 
-      // Usar codigoActivacion si viene, sino el del gimnasio
       final codigoFinal = codigoActivacion ?? codigoDesdeGimnasio;
 
       final userData = {
@@ -164,23 +168,21 @@ class UserViewmodel extends ChangeNotifier {
         'cedula': cedula ?? userDoc['cedula'],
         'tipo': tipoUsuario,
         'codigoGimnasio': codigoFinal,
-        'talla': tipoUsuario == 'Cliente' ? talla : null,
-        'peso': tipoUsuario == 'Cliente' ? peso : null,
-        'membresia': tipoUsuario == 'Cliente' ? membresia : null,
-        'pago': tipoUsuario == 'Cliente' ? pago : null,
+        'talla': tipoUsuario == 'Cliente' ? talla : '',
+        'peso': tipoUsuario == 'Cliente' ? peso : '',
+        'membresia': tipoUsuario == 'Cliente' ? membresia : '',
+        'pago': tipoUsuario == 'Cliente' ? pago : '',
         'habilitado': true,
         'estado': 'activo',
         'fechaUltimoPago':
-            tipoUsuario == 'Cliente' ? FieldValue.serverTimestamp() : null,
+            tipoUsuario == 'Cliente' ? FieldValue.serverTimestamp() : '',
       };
 
-      // Actualizar en usuarios global
-      await _firestore
-          .collection('usuarios')
-          .doc(usuarioId)
-          .update({'codigoGimnasio': codigoFinal, 'tipo': tipoUsuario});
+      await _firestore.collection('usuarios').doc(usuarioId).update({
+        'codigoGimnasio': codigoFinal,
+        'tipo': tipoUsuario,
+      });
 
-      // Guardar en subcolección del gimnasio
       await _firestore
           .collection('gimnasios')
           .doc(gimnasioId)
@@ -188,7 +190,6 @@ class UserViewmodel extends ChangeNotifier {
           .doc(usuarioId)
           .set(userData);
 
-      // Guardar en subcolección gimnasios dentro del usuario
       await _firestore
           .collection('usuarios')
           .doc(usuarioId)
@@ -197,8 +198,8 @@ class UserViewmodel extends ChangeNotifier {
           .set({
         'nombreGimnasio': nombreGimnasio,
         'tipoUsuario': tipoUsuario,
-        'codigoGimnasio': codigoFinal, // ← ahora sí correcto
-        'Habilitado': true,
+        'codigoGimnasio': codigoFinal,
+        'habilitado': true,
       });
 
       _errorMessage = null;
@@ -216,7 +217,7 @@ class UserViewmodel extends ChangeNotifier {
       String gimnasioId) async {
     _isLoading = true;
     notifyListeners();
-
+    print('obtenerUsuariosDeGimnasio llamado con ID: $gimnasioId');
     try {
       final querySnapshot = await _firestore
           .collection('gimnasios')
@@ -228,6 +229,9 @@ class UserViewmodel extends ChangeNotifier {
           .map((doc) => {'uid': doc.id, ...doc.data()})
           .toList();
 
+      // 📌 Aquí imprimes los usuarios para verificar
+      print('Usuarios obtenidos: $usuarios');
+
       _errorMessage = null;
       _successMessage = 'Usuarios obtenidos correctamente';
 
@@ -235,6 +239,7 @@ class UserViewmodel extends ChangeNotifier {
     } catch (e) {
       _errorMessage = 'Error al obtener usuarios: $e';
       _successMessage = null;
+      print('Error al obtener usuarios: $e');
       return [];
     } finally {
       _isLoading = false;
@@ -242,12 +247,13 @@ class UserViewmodel extends ChangeNotifier {
     }
   }
 
-  Future<void> registerPerson(UserRegisterModels usern) async {
-    try {
-      await _firestore.collection('usuarios').add(usern.toJson());
-      debugPrint('Persona registrada correctamente');
-    } catch (e) {
-      debugPrint('Error al registrar persona: $e');
-    }
+  Future<List<Map<String, dynamic>>>
+      cargarUsuariosDelGimnasioDelUsuarioActual() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return [];
+
+    final gimnasioId =
+        await _gimnasioService.obtenerGimnasioIdDesdeUsuario(user.uid);
+    return await obtenerUsuariosDeGimnasio(gimnasioId);
   }
 }

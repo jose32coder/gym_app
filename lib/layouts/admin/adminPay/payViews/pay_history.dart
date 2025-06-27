@@ -1,4 +1,7 @@
+import 'package:basic_flutter/components/notification_modal.dart';
+import 'package:basic_flutter/components/text_style.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'widgets/payment_card.dart';
 import 'widgets/payment_details_modal.dart';
 import '../../../../components/search_bar.dart';
@@ -85,45 +88,74 @@ class _PayHistoryState extends State<PayHistory> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Stack(
-      children: [
-        Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 16.0, top: 8),
-              child: SearchingBar(
-                controller: searchController,
-                theme: theme,
-              ),
-            ),
-            Expanded(
-              child: filteredPayments.isEmpty
-                  ? const Center(
-                      child: Text(
-                        'No se encontraron pagos',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: filteredPayments.length,
-                      itemBuilder: (context, index) {
-                        final payment = filteredPayments[index];
-                        return PaymentCard(
-                          payment: payment,
-                          onTap: () => _showPaymentDetails(payment),
-                        );
-                      },
-                    ),
-            ),
-          ],
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'Historico de pagos',
+          style: TextStyles.boldPrimaryText(context),
         ),
-        if (selectedPayment != null)
-          PaymentDetailsModal(
-            payment: selectedPayment!,
-            onClose: _closeModal,
+        centerTitle: true,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 10),
+            child: IconButton(
+              icon: const FaIcon(FontAwesomeIcons.bell),
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(20)),
+                  ),
+                  builder: (context) => const NotificationModal(),
+                );
+              },
+            ),
+          )
+        ],
+      ),
+      body: Stack(
+        children: [
+          Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(
+                    left: 16.0, right: 16.0, bottom: 16.0, top: 8),
+                child: SearchingBar(
+                  controller: searchController,
+                  theme: theme,
+                ),
+              ),
+              Expanded(
+                child: filteredPayments.isEmpty
+                    ? const Center(
+                        child: Text(
+                          'No se encontraron pagos',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: filteredPayments.length,
+                        itemBuilder: (context, index) {
+                          final payment = filteredPayments[index];
+                          return PaymentCard(
+                            payment: payment,
+                            onTap: () => _showPaymentDetails(payment),
+                          );
+                        },
+                      ),
+              ),
+            ],
           ),
-      ],
+          if (selectedPayment != null)
+            PaymentDetailsModal(
+              payment: selectedPayment!,
+              onClose: _closeModal,
+            ),
+        ],
+      ),
     );
   }
 }

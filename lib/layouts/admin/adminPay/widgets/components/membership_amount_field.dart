@@ -1,3 +1,4 @@
+import 'package:basic_flutter/components/text_style.dart';
 import 'package:flutter/material.dart';
 
 class MembershipAmountFields extends StatelessWidget {
@@ -25,14 +26,14 @@ class MembershipAmountFields extends StatelessWidget {
             controller: amountUsdController,
             decoration: InputDecoration(
               hintText: 'Monto en \$',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
               prefixIcon: const Icon(Icons.attach_money),
               fillColor: isDarkMode ? Colors.grey.shade800 : Colors.white,
               filled: true,
               helperText: ' ',
             ),
-            keyboardType:
-                const TextInputType.numberWithOptions(decimal: true),
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
             validator: validateAmount,
           ),
         if (paymentCurrency == 'Bs')
@@ -40,14 +41,14 @@ class MembershipAmountFields extends StatelessWidget {
             controller: amountBsController,
             decoration: InputDecoration(
               hintText: 'Monto en Bs',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
               prefixIcon: const Icon(Icons.attach_money),
               fillColor: isDarkMode ? Colors.grey.shade800 : Colors.white,
               filled: true,
               helperText: ' ',
             ),
-            keyboardType:
-                const TextInputType.numberWithOptions(decimal: true),
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
             validator: validateAmount,
           ),
         if (paymentCurrency == 'Ambos') ...[
@@ -55,29 +56,29 @@ class MembershipAmountFields extends StatelessWidget {
             controller: amountBsController,
             decoration: InputDecoration(
               hintText: 'Monto en Bs',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
               prefixIcon: const Icon(Icons.attach_money),
               fillColor: isDarkMode ? Colors.grey.shade800 : Colors.white,
               filled: true,
               helperText: ' ',
             ),
-            keyboardType:
-                const TextInputType.numberWithOptions(decimal: true),
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
             validator: validateAmount,
           ),
-          const SizedBox(height: 10),
+          // const SizedBox(height: 10),
           TextFormField(
             controller: amountUsdController,
             decoration: InputDecoration(
               hintText: 'Monto en \$',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
               prefixIcon: const Icon(Icons.attach_money),
               fillColor: isDarkMode ? Colors.grey.shade800 : Colors.white,
               filled: true,
               helperText: ' ',
             ),
-            keyboardType:
-                const TextInputType.numberWithOptions(decimal: true),
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
             validator: validateAmount,
           ),
         ],

@@ -32,7 +32,7 @@ class _TablePersonsState extends State<TablePersons> {
         child: Card(
           elevation: 4.0,
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            padding: const EdgeInsets.only(top: 16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -116,10 +116,10 @@ class _TablePersonsState extends State<TablePersons> {
 
 class _DataSource extends DataTableSource {
   final List<Map<String, dynamic>> _personas;
-  final PersonasViewModel _viewModel;
+  final PersonasViewModel viewModel;
   final ThemeData theme;
 
-  _DataSource(this._personas, this._viewModel, this.theme);
+  _DataSource(this._personas, this.viewModel, this.theme);
 
   @override
   DataRow getRow(int index) {

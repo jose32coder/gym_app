@@ -1,7 +1,11 @@
+import 'package:basic_flutter/components/notification_modal.dart';
+import 'package:basic_flutter/components/text_style.dart';
 import 'package:basic_flutter/layouts/admin/adminPay/payViews/widgets/member_card_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'dart:convert';
+
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class PayDebtAdmin extends StatefulWidget {
   const PayDebtAdmin({super.key});
@@ -29,61 +33,89 @@ class _PayDebtAdminState extends State<PayDebtAdmin> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<dynamic>>(
-      future: membresiasFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          return const Center(child: Text('Error al cargar datos'));
-        } else {
-          final membresias = snapshot.data ?? [];
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'Lista de pagos',
+          style: TextStyles.boldPrimaryText(context),
+        ),
+        centerTitle: true,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 10),
+            child: IconButton(
+              icon: const FaIcon(FontAwesomeIcons.bell),
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(20)),
+                  ),
+                  builder: (context) => const NotificationModal(),
+                );
+              },
+            ),
+          )
+        ],
+      ),
+      body: FutureBuilder<List<dynamic>>(
+        future: membresiasFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return const Center(child: Text('Error al cargar datos'));
+          } else {
+            final membresias = snapshot.data ?? [];
 
-          final membresiasFiltradas = membresias.where((m) {
-            final estadoCoincide =
-                estadoSeleccionado == null || m['estado'] == estadoSeleccionado;
-            return estadoCoincide;
-          }).toList();
+            final membresiasFiltradas = membresias.where((m) {
+              final estadoCoincide = estadoSeleccionado == null ||
+                  m['estado'] == estadoSeleccionado;
+              return estadoCoincide;
+            }).toList();
 
-          return Column(
-            children: [
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: FilterDrop(
-                  estadoSeleccionado: estadoSeleccionado,
-                  onChanged: (nuevoEstado) {
-                    setState(() {
-                      estadoSeleccionado = nuevoEstado;
-                    });
-                  },
+            return Column(
+              children: [
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: FilterDrop(
+                    estadoSeleccionado: estadoSeleccionado,
+                    onChanged: (nuevoEstado) {
+                      setState(() {
+                        estadoSeleccionado = nuevoEstado;
+                      });
+                    },
+                  ),
                 ),
-              ),
 
-              // Separación entre filtro y lista
-              const SizedBox(height: 12),
+                // Separación entre filtro y lista
+                const SizedBox(height: 12),
 
-              Expanded(
-                child: membresiasFiltradas.isEmpty
-                    ? const Center(child: Text('No hay resultados'))
-                    : ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        itemCount: membresiasFiltradas.length,
-                        itemBuilder: (context, index) {
-                          final item = membresiasFiltradas[index];
-                          return MemberCardState(
-                            cliente: item['cliente'],
-                            fechaVencimiento: item['fechaVencimiento'],
-                            estado: item['estado'],
-                            monto: (item['monto'] as num).toDouble(),
-                          );
-                        },
-                      ),
-              ),
-            ],
-          );
-        }
-      },
+                Expanded(
+                  child: membresiasFiltradas.isEmpty
+                      ? const Center(child: Text('No hay resultados'))
+                      : ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          itemCount: membresiasFiltradas.length,
+                          itemBuilder: (context, index) {
+                            final item = membresiasFiltradas[index];
+                            return MemberCardState(
+                              cliente: item['cliente'],
+                              fechaVencimiento: item['fechaVencimiento'],
+                              estado: item['estado'],
+                              monto: (item['monto'] as num).toDouble(),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            );
+          }
+        },
+      ),
     );
   }
 }

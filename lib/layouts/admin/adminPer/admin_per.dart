@@ -58,48 +58,23 @@ class _AdminPerState extends State<AdminPer> {
         padding: EdgeInsets.all(8.0),
         child: TablePersons(), // Aquí va el widget de la tabla
       ),
-      floatingActionButton: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          FloatingActionButton(
-            heroTag: 'button_add_persons',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AddPersons(),
-                ),
-              );
-            },
-            child: Icon(
-              Icons.add,
-              color: isDarkMode
-                  ? theme.colorScheme.onSurface
-                  : theme.colorScheme.onInverseSurface,
+      floatingActionButton: FloatingActionButton(
+        heroTag: 'button_add_persons',
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const AddPersons(),
             ),
-            backgroundColor: theme.colorScheme.primary,
-          ),
-          SizedBox(height: 12),
-          FloatingActionButton(
-            heroTag: 'button_create_code',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => CreateCode(),
-                ),
-              );
-            },
-            child: Icon(
-              Icons.qr_code,
-              color: isDarkMode
-                  ? theme.colorScheme.onSurface
-                  : theme.colorScheme.onInverseSurface,
-            ),
-            backgroundColor: theme.colorScheme.primary,
-          ),
-        ],
+          );
+        },
+        backgroundColor: theme.colorScheme.primary,
+        child: Icon(
+          Icons.add,
+          color: isDarkMode
+              ? theme.colorScheme.onSurface
+              : theme.colorScheme.onInverseSurface,
+        ),
       ),
     );
   }

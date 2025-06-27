@@ -97,7 +97,7 @@ class AuthViewmodel extends ChangeNotifier {
   }) async {
     await _firestore.collection('usuarios').doc(uid).set({
       'uid': uid,
-      'ced': ced,
+      'cedula': ced,
       'email': email,
       'nombre': name,
       'apellido': lastname,

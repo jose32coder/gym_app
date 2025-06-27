@@ -1,9 +1,7 @@
-import 'package:basic_flutter/components/notification_modal.dart';
-import 'package:basic_flutter/components/text_style.dart';
-import 'package:basic_flutter/layouts/admin/adminPay/widgets/admin_card_pay_grid.dart';
-
+import 'package:basic_flutter/layouts/admin/adminPay/payViews/pay_debt_admin.dart';
+import 'package:basic_flutter/layouts/admin/adminPay/payViews/pay_history.dart';
+import 'package:basic_flutter/layouts/admin/adminPay/payViews/pay_register.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class AdminPay extends StatefulWidget {
   const AdminPay({super.key});
@@ -13,84 +11,44 @@ class AdminPay extends StatefulWidget {
 }
 
 class _AdminPayState extends State<AdminPay> {
-  Widget? selectedView;
+  int _currentIndex = 0;
+
+  final List<Widget> _screens = [
+    const PayRegister(
+      desdeAdmin: false,
+    ),
+    const PayDebtAdmin(),
+    const PayHistory(),
+  ];
 
   @override
   Widget build(BuildContext context) {
-    final mainColor = Theme.of(context).primaryColor;
-
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Pagos / Facturación',
-          style: TextStyles.boldPrimaryText(context),
-        ),
-        centerTitle: true,
-       actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 10),
-            child: IconButton(
-              icon: const FaIcon(FontAwesomeIcons.bell),
-              onPressed: () {
-                showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  shape: const RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.vertical(top: Radius.circular(20)),
-                  ),
-                  builder: (context) => const NotificationModal(),
-                );
-              },
-            ),
-          )
+      body: _screens[_currentIndex],
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _currentIndex,
+        onDestinationSelected: (int index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.payment_outlined),
+            label: 'Registrar',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.card_membership_outlined),
+            label: 'Deudas',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.local_offer_outlined),
+            label: 'Histórico',
+          ),
+          
         ],
       ),
-      body: SafeArea(
-        child: GestureDetector(
-          onTap: () => FocusScope.of(context).unfocus(),
-          behavior: HitTestBehavior.opaque,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 20, left: 16, right: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Administra los pagos:',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 20),
-                    _buildAdminCards(),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 10),
-              if (selectedView != null) ...[
-                Divider(
-                  thickness: 3,
-                  color: mainColor,
-                ),
-                const SizedBox(height: 2),
-                Expanded(child: selectedView!),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAdminCards() {
-    return AdminCardPayGrid(
-      onCardSelected: (Widget selected) {
-        setState(() {
-          selectedView = selected;
-        });
-      },
     );
   }
 }
+

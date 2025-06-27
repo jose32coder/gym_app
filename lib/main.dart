@@ -1,11 +1,10 @@
 import 'dart:io';
 
-import 'package:basic_flutter/gymCodeOrSelect/selection_rol_page.dart';
 import 'package:basic_flutter/login/sign_in.dart';
-import 'package:basic_flutter/login/sign_up.dart';
-import 'package:basic_flutter/navigation_menu.dart';
 import 'package:basic_flutter/viewmodel/auth_viewmodel.dart';
+import 'package:basic_flutter/viewmodel/membership_viewmodel.dart';
 import 'package:basic_flutter/viewmodel/person_viewmodel.dart';
+import 'package:basic_flutter/viewmodel/promos_viewmodel.dart';
 import 'package:basic_flutter/viewmodel/user_viewmodel.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -20,25 +19,27 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
 
-  String host = 'localhost';
-  if (!kIsWeb && Platform.isAndroid) {
-    host = '192.168.0.203';
-  }
+  // String host = 'localhost';
+  // if (!kIsWeb && Platform.isAndroid) {
+  //   host = '192.168.0.203';
+  // }
 
-  print('DEBUG MODE: $kDebugMode');
+  // print('DEBUG MODE: $kDebugMode');
 
-  if (kDebugMode) {
-    FirebaseAuth.instance.setSettings(appVerificationDisabledForTesting: true);
-    await FirebaseAuth.instance.useAuthEmulator(host, 9099);
-    FirebaseFirestore.instance.useFirestoreEmulator(host, 8080);
-  }
+  // if (kDebugMode) {
+  //   FirebaseAuth.instance.setSettings(appVerificationDisabledForTesting: true);
+  //   await FirebaseAuth.instance.useAuthEmulator(host, 9099);
+  //   FirebaseFirestore.instance.useFirestoreEmulator(host, 8080);
+  // }
 
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthViewmodel()),
         ChangeNotifierProvider(create: (_) => UserViewmodel()),
-        ChangeNotifierProvider(create: (_) => PersonasViewModel())
+        ChangeNotifierProvider(create: (_) => PersonasViewModel()),
+        ChangeNotifierProvider(create: (_) => MembershipViewmodel()),
+        ChangeNotifierProvider(create: (_) => PromotionViewModel())
       ],
       child: const MainApp(),
     ),
