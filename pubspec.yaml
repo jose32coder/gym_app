@@ -1,6 +1,6 @@
 name: basic_flutter
 description: "A new Flutter project."
-publish_to: 'none'
+publish_to: "none"
 version: 0.1.0
 
 environment:
@@ -16,7 +16,7 @@ dependencies:
   fl_chart: ^0.66.0
   flutter_localizations:
     sdk: flutter
-  flutter_native_splash: ^2.4.6
+  flutter_native_splash: 2.4.4
   font_awesome_flutter: ^10.8.0
   cloud_firestore: ^5.6.8
   firebase_core: ^3.13.1
@@ -28,6 +28,10 @@ dependencies:
   qr_flutter: ^4.1.0
   share_plus: ^7.0.2
   path_provider: ^2.0.15
+  collection: ^1.18.0
+  pdf: ^3.11.3
+  open_file: ^3.5.10
+  excel: ^2.0.0
 
 dev_dependencies:
   flutter_test:

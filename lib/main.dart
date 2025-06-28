@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:basic_flutter/login/sign_in.dart';
 import 'package:basic_flutter/viewmodel/auth_viewmodel.dart';
 import 'package:basic_flutter/viewmodel/membership_viewmodel.dart';
+import 'package:basic_flutter/viewmodel/pay_viewmodel.dart';
 import 'package:basic_flutter/viewmodel/person_viewmodel.dart';
 import 'package:basic_flutter/viewmodel/promos_viewmodel.dart';
 import 'package:basic_flutter/viewmodel/user_viewmodel.dart';
@@ -39,7 +40,8 @@ void main() async {
         ChangeNotifierProvider(create: (_) => UserViewmodel()),
         ChangeNotifierProvider(create: (_) => PersonasViewModel()),
         ChangeNotifierProvider(create: (_) => MembershipViewmodel()),
-        ChangeNotifierProvider(create: (_) => PromotionViewModel())
+        ChangeNotifierProvider(create: (_) => PromotionViewModel()),
+        ChangeNotifierProvider(create: (_) => PayViewModel())
       ],
       child: const MainApp(),
     ),

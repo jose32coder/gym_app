@@ -556,11 +556,7 @@ class _SignUpState extends State<SignUp> {
                     const Text('¿Ya tienes una cuenta?'),
                     TextButton(
                       onPressed: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const SignIn()),
-                        );
+                        Navigator.pop(context);
                       },
                       child: const Text(
                         'Inicia sesión',

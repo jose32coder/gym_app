@@ -1,6 +1,7 @@
 import 'package:basic_flutter/gymCodeOrSelect/selection_rol_page.dart';
+import 'package:basic_flutter/layouts/client/client_homepage.dart';
 import 'package:basic_flutter/login/sign_in.dart';
-import 'package:basic_flutter/navigation_menu.dart';
+import 'package:basic_flutter/layouts/navigation_menu.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -45,14 +46,21 @@ class AuthViewmodel extends ChangeNotifier {
     }
   }
 
-  Future<void> register({
-    required String ced,
-    required String email,
-    required String password,
-    required String name,
-    required String lastname,
-      required String? sexo
-  }) async {
+  Future<void> createInitialGymForUser(String uid) async {
+    await _firestore
+        .collection('usuarios')
+        .doc(uid)
+        .collection('gimnasios')
+        .add({'codigoGimnasio': ''});
+  }
+
+  Future<void> register(
+      {required String ced,
+      required String email,
+      required String password,
+      required String name,
+      required String lastname,
+      required String? sexo}) async {
     _isLoading = true;
     notifyListeners();
 
@@ -65,13 +73,14 @@ class AuthViewmodel extends ChangeNotifier {
       _tempEmail = email;
 
       await saveBasicUserData(
-        uid: cred.user!.uid,
+          uid: cred.user!.uid,
           ced: ced,
-        email: email,
-        name: name,
-        lastname: lastname,
-          sexo: sexo
-      );
+          email: email,
+          name: name,
+          lastname: lastname,
+          sexo: sexo);
+
+      await createInitialGymForUser(cred.user!.uid);
 
       _errorMessage = null;
       _successMessage = 'Usuario registrado correctamente';
@@ -150,33 +159,36 @@ class AuthViewmodel extends ChangeNotifier {
   Stream<Widget> get userScreenStream {
     return _auth.authStateChanges().switchMap((user) {
       if (user == null) {
-        // Usuario no autenticado
         return Stream.value(const SignIn());
       }
 
-      // Usuario autenticado — escuchamos su documento
-      final userGymsStream = _firestore
-          .collection('usuarios')
-          .doc(user.uid)
-          .collection('gimnasios')
-          .snapshots()
-          .map((snapshot) {
-        if (snapshot.docs.isEmpty) {
+      final userDocStream =
+          _firestore.collection('usuarios').doc(user.uid).snapshots();
+
+      return userDocStream.map((doc) {
+        if (!doc.exists) {
           return const SelectionRolPage();
         }
 
-        // Puedes tomar el primer gimnasio, o iterar si quieres
-        final firstGymData = snapshot.docs.first.data();
-        final codigo = firstGymData['codigoGimnasio'] as String?;
+        final data = doc.data()!;
+        final rol = data['tipo'] as String?;
+        final codigoGimnasio = data['codigoGimnasio'] as String?;
 
-        if (codigo == null || codigo.isEmpty) {
+        if (rol == null) {
+          return const SelectionRolPage();
+        }
+
+        if (rol == 'Cliente') {
+          return ClienteHomePage(user: user);
+        }
+
+        // Para administradores o dueños, validamos el código
+        if (codigoGimnasio == null || codigoGimnasio.isEmpty) {
           return const SelectionRolPage();
         }
 
         return const NavigationMenu();
       });
-
-      return userGymsStream;
     });
   }
 }
