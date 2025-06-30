@@ -12,7 +12,7 @@ dependencies:
   image_picker: ^1.1.2
   flutter_plugin_android_lifecycle: ^2.0.28
   horizontal_data_table: ^4.3.1
-  intl: ^0.19.0
+  intl: ^0.20.0
   fl_chart: ^0.66.0
   flutter_localizations:
     sdk: flutter
@@ -32,6 +32,8 @@ dependencies:
   pdf: ^3.11.3
   open_file: ^3.5.10
   excel: ^2.0.0
+  vertical_weight_slider: ^2.6.0
+  syncfusion_flutter_sliders: ^30.1.37
 
 dev_dependencies:
   flutter_test:

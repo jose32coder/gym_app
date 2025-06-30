@@ -58,24 +58,6 @@ class _AdminPerState extends State<AdminPer> {
         padding: EdgeInsets.all(8.0),
         child: TablePersons(), // Aquí va el widget de la tabla
       ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: 'button_add_persons',
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const AddPersons(),
-            ),
-          );
-        },
-        backgroundColor: theme.colorScheme.primary,
-        child: Icon(
-          Icons.add,
-          color: isDarkMode
-              ? theme.colorScheme.onSurface
-              : theme.colorScheme.onInverseSurface,
-        ),
-      ),
     );
   }
 }

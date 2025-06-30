@@ -200,11 +200,11 @@ class MembershipViewmodel extends ChangeNotifier {
         yield [];
         return;
       }
-
+      print('Código de gimnasio obtenido: "$codigoGimnasio"');
       // Buscar gimnasio cuyo campo 'codigo' coincida con el código del usuario
       final gimnasioQuery = await _firestore
           .collection('gimnasios')
-          .where('codigo', isEqualTo: codigoGimnasio)
+          .where('codigo', isEqualTo: codigoGimnasio.substring(0, 8))
           .limit(1)
           .get();
 
@@ -232,55 +232,55 @@ class MembershipViewmodel extends ChangeNotifier {
     }
   }
 
-  Future<List<MembershipModel>> obtenerMembresiasActivasPorUsuario(
-      String usuarioId) async {
-    try {
-      // Obtener documento de usuario
-      final docUsuario =
-          await _firestore.collection('usuarios').doc(usuarioId).get();
+  // Future<List<MembershipModel>> obtenerMembresiasActivasPorUsuario(
+  //     String usuarioId) async {
+  //   try {
+  //     // Obtener documento de usuario
+  //     final docUsuario =
+  //         await _firestore.collection('usuarios').doc(usuarioId).get();
 
-      if (!docUsuario.exists) {
-        print('El usuario no existe');
-        return [];
-      }
+  //     if (!docUsuario.exists) {
+  //       print('El usuario no existe');
+  //       return [];
+  //     }
 
-      final codigoGimnasio = docUsuario.get('codigoGimnasio');
-      if (codigoGimnasio == null || codigoGimnasio.isEmpty) {
-        print('El usuario no tiene código de gimnasio asignado');
-        return [];
-      }
+  //     final codigoGimnasio = docUsuario.get('codigoGimnasio');
+  //     if (codigoGimnasio == null || codigoGimnasio.isEmpty) {
+  //       print('El usuario no tiene código de gimnasio asignado');
+  //       return [];
+  //     }
 
-      // Buscar gimnasio cuyo campo 'codigo' coincida con el código del usuario
-      final gimnasioQuery = await _firestore
-          .collection('gimnasios')
-          .where('codigo', isEqualTo: codigoGimnasio)
-          .limit(1)
-          .get();
+  //     // Buscar gimnasio cuyo campo 'codigo' coincida con el código del usuario
+  //     final gimnasioQuery = await _firestore
+  //         .collection('gimnasios')
+  //         .where('codigo', isEqualTo: codigoGimnasio)
+  //         .limit(1)
+  //         .get();
 
-      if (gimnasioQuery.docs.isEmpty) {
-        print('No se encontró gimnasio con código: $codigoGimnasio');
-        return [];
-      }
+  //     if (gimnasioQuery.docs.isEmpty) {
+  //       print('No se encontró gimnasio con código: $codigoGimnasio');
+  //       return [];
+  //     }
 
-      final gimnasioId = gimnasioQuery.docs.first.id;
+  //     final gimnasioId = gimnasioQuery.docs.first.id;
 
-      // Obtener membresías activas
-      final membresiasQuery = await _firestore
-          .collection('gimnasios')
-          .doc(gimnasioId)
-          .collection('membresias')
-          .where('isActive', isEqualTo: true)
-          .get();
+  //     // Obtener membresías activas
+  //     final membresiasQuery = await _firestore
+  //         .collection('gimnasios')
+  //         .doc(gimnasioId)
+  //         .collection('membresias')
+  //         .where('isActive', isEqualTo: true)
+  //         .get();
 
-      // Convertir documentos a Membership
-      final membresias = membresiasQuery.docs
-          .map((doc) => MembershipModel.fromFirestore(doc))
-          .toList();
+  //     // Convertir documentos a Membership
+  //     final membresias = membresiasQuery.docs
+  //         .map((doc) => MembershipModel.fromFirestore(doc))
+  //         .toList();
 
-      return membresias;
-    } catch (e) {
-      print('Error al obtener membresías activas: $e');
-      return [];
-    }
-  }
+  //     return membresias;
+  //   } catch (e) {
+  //     print('Error al obtener membresías activas: $e');
+  //     return [];
+  //   }
+  // }
 }

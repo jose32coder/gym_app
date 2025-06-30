@@ -18,7 +18,7 @@ class GimnasioService {
   Future<String> obtenerGimnasioIdDesdeUsuario(String usuarioId) async {
     final snapshot = await FirebaseFirestore.instance
         .collection('gimnasios')
-        .where('propietario', isEqualTo: usuarioId)
+        .where('tipoUsuario', isEqualTo: usuarioId)
         .limit(1)
         .get();
 
@@ -32,20 +32,25 @@ class GimnasioService {
     }
   }
 
-  Future<String> obtenerCodigoGimnasio(String gimnasioId) async {
-    if (gimnasioId.isEmpty) return '';
+  // Future<String> obtenerCodigoGimnasio(String gimnasioId) async {
+  //   if (gimnasioId.isEmpty) return '';
 
-    final doc = await FirebaseFirestore.instance
-        .collection('gimnasios')
-        .doc(gimnasioId)
-        .get();
+  //   final doc = await FirebaseFirestore.instance
+  //       .collection('gimnasios')
+  //       .doc(gimnasioId)
+  //       .get();
 
-    if (doc.exists && doc.data() != null) {
-      return doc.data()!['codigo'] ?? '';
-    } else {
-      return '';
-    }
-  }
+  //   if (doc.exists && doc.data() != null) {
+  //     final codigoCompleto = doc.data()!['codigo'] ?? '';
+  //     if (codigoCompleto.length >= 8) {
+  //       return codigoCompleto.substring(0, 8);
+  //     } else {
+  //       return codigoCompleto; // Devuelve lo que haya si es menos de 8 caracteres
+  //     }
+  //   } else {
+  //     return '';
+  //   }
+  // }
 
   Future<String> crearCodigo() async {
     final codigo = _uuid.v4().substring(0, 8).toUpperCase();
@@ -73,76 +78,5 @@ class GimnasioService {
       'usadoPor': uid,
       'fechaUso': FieldValue.serverTimestamp(),
     });
-  }
-
-  Future<String> crearGimnasio({
-    required String propietarioUid,
-    required String nombre,
-    required String direccion,
-    required String telefono,
-    required String codigo,
-  }) async {
-    final docRef = _db.collection('gimnasios').doc(); // Genera ID automático
-
-    await docRef.set({
-      'nombre': nombre,
-      'direccion': direccion,
-      'telefono': telefono,
-      'propietario': propietarioUid,
-      'codigo': codigo,
-      'fechaRegistro': FieldValue.serverTimestamp(),
-      'usado': false
-    });
-
-    return docRef.id;
-  }
-
-  Future<void> registrarUsuarioEnGimnasio(
-      {required String gimnasioId,
-      required String usuarioId,
-      required String tipoUsuario, // 'Cliente' o 'Administrador'
-      String? nombre,
-      String? apellido,
-      double? talla,
-      double? peso,
-      String? membresia,
-      double? pago}) async {
-    ;
-
-    final collectionName;
-
-    if (tipoUsuario == 'Cliente') {
-      collectionName = 'clientes';
-    } else if (tipoUsuario == 'Administrador') {
-      collectionName = 'administradores';
-    } else if (tipoUsuario == 'Dueño') {
-      collectionName = 'dueños'; // o 'duenos' si prefieres separarlo
-    } else {
-      throw Exception('Tipo de usuario inválido');
-    }
-
-    final docRef = FirebaseFirestore.instance
-        .collection('gimnasios')
-        .doc(gimnasioId)
-        .collection(collectionName)
-        .doc(usuarioId);
-
-    // Construimos el mapa de datos a guardar, con campos según tipoUsuario
-    Map<String, dynamic> data = {
-      'nombre': nombre,
-      'apellido': apellido,
-      'registradoEn': FieldValue.serverTimestamp(),
-    };
-
-    if (tipoUsuario == 'Cliente') {
-      data.addAll({
-        'talla': talla,
-        'peso': peso,
-        'membresia': membresia,
-        'pago': pago,
-      });
-    }
-
-    await docRef.set(data);
   }
 }

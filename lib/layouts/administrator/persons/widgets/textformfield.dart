@@ -170,6 +170,7 @@ class _TextFormPageState extends State<TextFormPage> {
           final codigoFinal = '$codigoRecortado-$codigoAleatorio';
 
           setState(() {
+            _codeError = null;
             _codeController.text = codigoFinal;
           });
         }
@@ -333,6 +334,12 @@ class _TextFormPageState extends State<TextFormPage> {
               fillColor: isDarkMode ? Colors.grey.shade800 : Colors.white,
               filled: true,
             ).copyWith(errorText: _nameError),
+            onChanged: (value) {
+              setState(() {
+                _nameError = Validations.validateName(value);
+              });
+            },
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             validator: Validations.validateName,
           ),
           const SizedBox(height: 15),
@@ -352,7 +359,13 @@ class _TextFormPageState extends State<TextFormPage> {
               prefixIcon: const Icon(Icons.account_circle),
               fillColor: isDarkMode ? Colors.grey.shade800 : Colors.white,
               filled: true,
-            ).copyWith(errorText: _nameError),
+            ).copyWith(errorText: _lastnameError),
+            onChanged: (value) {
+              setState(() {
+                _lastnameError = Validations.validateName(value);
+              });
+            },
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             validator: Validations.validateName,
           ),
           const SizedBox(height: 20),
@@ -363,6 +376,8 @@ class _TextFormPageState extends State<TextFormPage> {
           const SizedBox(height: 5),
           DropdownButtonFormField<String>(
             value: _selectedSexo,
+            focusNode: _sexoFocusNode,
+            hint: const Text('Selecciona un sexo'),
             decoration: InputDecoration(
               border:
                   OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
@@ -372,7 +387,6 @@ class _TextFormPageState extends State<TextFormPage> {
               errorText: _sexoError,
             ),
             items: const [
-              DropdownMenuItem(value: null, child: Text('Selecciona un sexo')),
               DropdownMenuItem(value: 'Masculino', child: Text('Masculino')),
               DropdownMenuItem(value: 'Femenino', child: Text('Femenino')),
               DropdownMenuItem(value: 'Otro', child: Text('Otro')),
@@ -391,6 +405,8 @@ class _TextFormPageState extends State<TextFormPage> {
           ),
           DropdownButtonFormField<String>(
             value: _selectedRol,
+            focusNode: _rolFocusNode,
+            hint: const Text('Selecciona un rol'),
             decoration: InputDecoration(
               border:
                   OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
@@ -400,7 +416,6 @@ class _TextFormPageState extends State<TextFormPage> {
               errorText: _rolError,
             ),
             items: const [
-              DropdownMenuItem(value: null, child: Text('Selecciona un rol')),
               DropdownMenuItem(
                   value: 'Administrador', child: Text('Administrador')),
               DropdownMenuItem(value: 'Entrenador', child: Text('Entrenador')),
@@ -433,6 +448,12 @@ class _TextFormPageState extends State<TextFormPage> {
               fillColor: isDarkMode ? Colors.grey.shade800 : Colors.white,
               filled: true,
             ).copyWith(errorText: _emailError),
+            onChanged: (value) {
+              setState(() {
+                _emailError = Validations.validateEmail(value);
+              });
+            },
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             validator: Validations.validateEmail,
           ),
           const SizedBox(height: 20),
@@ -445,7 +466,7 @@ class _TextFormPageState extends State<TextFormPage> {
             controller: _passwordController,
             focusNode: _passwordFocusNode,
             decoration: InputDecoration(
-              hintText: 'Contreaseña',
+              hintText: 'Contraseña',
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -453,6 +474,12 @@ class _TextFormPageState extends State<TextFormPage> {
               fillColor: isDarkMode ? Colors.grey.shade800 : Colors.white,
               filled: true,
             ).copyWith(errorText: _passwordError),
+            onChanged: (value) {
+              setState(() {
+                _passwordError = Validations.validatePassword(value);
+              });
+            },
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             validator: Validations.validatePassword,
           ),
           const SizedBox(height: 20),
@@ -462,38 +489,45 @@ class _TextFormPageState extends State<TextFormPage> {
           ),
           const SizedBox(height: 5),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start, // Alinea por arriba
             children: [
               Expanded(
-                child: TextFormField(
-                  controller: _codeController,
-                  focusNode: _codeFocusNode,
-                  decoration: InputDecoration(
-                    hintText: 'Codigo',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
+                child: Container(
+                  height: 80, // Altura fija suficiente para input + error
+                  child: TextFormField(
+                    controller: _codeController,
+                    focusNode: _codeFocusNode,
+                    readOnly: true,
+                    decoration: InputDecoration(
+                      hintText: 'Codigo',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      prefixIcon: const Icon(Icons.qr_code),
+                      fillColor:
+                          isDarkMode ? Colors.grey.shade800 : Colors.white,
+                      filled: true,
+                      errorText: _codeError,
                     ),
-                    prefixIcon: const Icon(Icons.qr_code),
-                    fillColor: isDarkMode ? Colors.grey.shade800 : Colors.white,
-                    filled: true,
-                  ).copyWith(errorText: _codeError),
-                  validator: Validations.validateCode,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    validator: Validations.validateCode,
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
               SizedBox(
                 height: 55,
-                width: 55, // ancho igual a alto para hacerlo cuadrado
+                width: 55,
                 child: ElevatedButton(
                   onPressed: obtenerCodigoGimnasio,
                   style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.zero, // <-- elimina espacio interno
+                    padding: EdgeInsets.zero,
                     backgroundColor: theme.colorScheme.primary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
                   child: Center(
-                    // <-- fuerza el ícono a centrarse
                     child: Icon(
                       Icons.qr_code,
                       color: isDarkMode
@@ -503,7 +537,7 @@ class _TextFormPageState extends State<TextFormPage> {
                     ),
                   ),
                 ),
-              )
+              ),
             ],
           ),
           const SizedBox(height: 30),

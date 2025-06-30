@@ -62,7 +62,7 @@ class _MembershipFormState extends State<MembershipForm> {
     _nameFocusNode.addListener(() {
       if (!_nameFocusNode.hasFocus) {
         setState(() {
-          _nameError = Validations.validateName(_nameController.text);
+          _nameError = Validations.validateMembershipName(_nameController.text);
         });
       }
     });
@@ -103,7 +103,7 @@ class _MembershipFormState extends State<MembershipForm> {
     final uid = FirebaseAuth.instance.currentUser?.uid;
 
     setState(() {
-      _nameError = Validations.validateName(_nameController.text);
+      _nameError = Validations.validateMembershipName(_nameController.text);
     });
 
     if (_formKey.currentState!.validate() &&
@@ -268,11 +268,12 @@ class _MembershipFormState extends State<MembershipForm> {
                           ),
                           onChanged: (value) {
                             setState(() {
-                              _nameError = Validations.validateName(value);
+                              _nameError =
+                                  Validations.validateMembershipName(value);
                             });
                           },
                           autovalidateMode: AutovalidateMode.onUserInteraction,
-                          validator: Validations.validateName,
+                          validator: Validations.validateMembershipName,
                         ),
                         const SizedBox(height: 15),
 
@@ -359,7 +360,7 @@ class _MembershipFormState extends State<MembershipForm> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Expanded(
-                              child: ElevatedButton(
+                              child: ElevatedButton.icon(
                                 onPressed: () {
                                   widget.membershipEdit == null
                                       ? _registerMembership()
@@ -373,7 +374,13 @@ class _MembershipFormState extends State<MembershipForm> {
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                 ),
-                                child: Text(
+                                icon: Icon(
+                                  Icons.add,
+                                  color: isDarkMode
+                                      ? theme.colorScheme.onSurface
+                                      : theme.colorScheme.onInverseSurface,
+                                ),
+                                label: Text(
                                   widget.membershipEdit == null
                                       ? 'Registrar'
                                       : 'Actualizar',

@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:basic_flutter/login/sign_in.dart';
 import 'package:basic_flutter/viewmodel/auth_viewmodel.dart';
 import 'package:basic_flutter/viewmodel/membership_viewmodel.dart';
@@ -7,10 +5,7 @@ import 'package:basic_flutter/viewmodel/pay_viewmodel.dart';
 import 'package:basic_flutter/viewmodel/person_viewmodel.dart';
 import 'package:basic_flutter/viewmodel/promos_viewmodel.dart';
 import 'package:basic_flutter/viewmodel/user_viewmodel.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -90,7 +85,7 @@ class MainApp extends StatelessWidget {
             const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
           ),
         ),
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           color: Colors.white,
           elevation: 3,
           shadowColor: Colors.grey.withOpacity(0.3),
@@ -135,7 +130,7 @@ class MainApp extends StatelessWidget {
             const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
           ),
         ),
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           color: const Color(0xFF1E1E1E),
           elevation: 3,
           shadowColor: Colors.black.withOpacity(0.5),

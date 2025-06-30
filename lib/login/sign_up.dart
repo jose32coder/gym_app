@@ -2,7 +2,6 @@
 
 import 'package:basic_flutter/components/validations.dart';
 import 'package:flutter/material.dart';
-import 'package:basic_flutter/login/sign_in.dart';
 import 'package:provider/provider.dart';
 import 'package:basic_flutter/viewmodel/auth_viewmodel.dart';
 

@@ -37,6 +37,19 @@ class Validations {
     return null;
   }
 
+  static String? validateReferencia(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'La referencia es requerida';
+    }
+    if (value.length < 4) {
+      return 'La referencia debe tener al menos 4 números';
+    }
+    if (!RegExp(r'^\d+$').hasMatch(value)) {
+      return 'La referencia debe contener solo números';
+    }
+    return null;
+  }
+
   static String? validateName(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Este campo es obligatorio';
@@ -63,6 +76,25 @@ class Validations {
     }
     return null;
   }
+
+  static String? validateAmountBsAndDollar(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Coloca un monto valido';
+    }
+    final numValue = num.tryParse(value);
+    if (numValue == null || numValue <= 0) {
+      return 'Debe ser un número mayor a 0';
+    }
+    return null;
+  }
+
+  static String? validateMembershipName(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'El nombre de la membresía es obligatorio';
+    }
+    return null;
+  }
+
 
   static String? validatePromotionName(String? value) {
     if (value == null || value.trim().isEmpty) {

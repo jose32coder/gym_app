@@ -1,4 +1,5 @@
 import 'package:basic_flutter/components/text_style.dart';
+import 'package:basic_flutter/components/validations.dart';
 import 'package:basic_flutter/layouts/administrator/admin/adminPay/widgets/components/pay_currency.dart';
 import 'package:basic_flutter/models/model_membership.dart';
 import 'package:basic_flutter/models/model_promo.dart';
@@ -18,6 +19,7 @@ class AdminPayForm extends StatefulWidget {
   final TextEditingController nombreController;
   final TextEditingController? amountUsdController;
   final TextEditingController? amountBsController;
+  final TextEditingController? paymentReferenceController;
 
   const AdminPayForm(
       {super.key,
@@ -25,7 +27,8 @@ class AdminPayForm extends StatefulWidget {
       required this.cedulaController,
       required this.nombreController,
       this.amountBsController,
-      this.amountUsdController});
+      this.amountUsdController,
+      this.paymentReferenceController});
 
   @override
   State<AdminPayForm> createState() => _AdminPayFormState();
@@ -38,17 +41,26 @@ class _AdminPayFormState extends State<AdminPayForm> {
   bool isLoadingMembresias = true;
   bool isLoadingPromociones = true;
   bool hayPromocion = false;
+  bool isLoading = false;
 
   String _membership = '';
   String _selectedPromocion = '';
   final uid = FirebaseAuth.instance.currentUser!.uid;
   MembershipModel? membresiaSeleccionada;
 
-  // bool _entrenadorPersonal = false;
+  late FocusNode _cedFocusNode;
+  late FocusNode _memberFocusNode;
+  late FocusNode _montoBsFocusNode;
+
+  String? _memberError;
+  String? _cedError;
+  String? _montoBsError;
 
   final TextEditingController _dateRangeController = TextEditingController();
   String _paymentCurrency = 'Dólares';
 
+  final TextEditingController _paymentReferenceController =
+      TextEditingController();
   final TextEditingController _amountUsdController = TextEditingController();
   final TextEditingController _amountBsController = TextEditingController();
   final TextEditingController _amountTotalController = TextEditingController();
@@ -65,6 +77,13 @@ class _AdminPayFormState extends State<AdminPayForm> {
 
   @override
   void dispose() {
+    _cedFocusNode.dispose();
+    _memberFocusNode.dispose();
+    _montoBsFocusNode.dispose();
+    _dateRangeController.dispose();
+    _amountUsdController.dispose();
+    _amountBsController.dispose();
+    _amountTotalController.dispose();
     super.dispose();
   }
 
@@ -73,20 +92,49 @@ class _AdminPayFormState extends State<AdminPayForm> {
     super.initState();
     _cargarMembresias();
     _cargarPromociones();
+
+    _cedFocusNode = FocusNode();
+    _memberFocusNode = FocusNode();
+    _montoBsFocusNode = FocusNode();
+
+    _cedFocusNode.addListener(() {
+      if (!_cedFocusNode.hasFocus) {
+        setState(() {
+          _cedError = Validations.validateCed(widget.cedulaController.text);
+        });
+      }
+    });
+
+    _memberFocusNode.addListener(() {
+      if (!_memberFocusNode.hasFocus) {
+        setState(() {
+          _memberError = Validations.validateMembershipName(_membership);
+        });
+      }
+    });
+
+    _montoBsFocusNode.addListener(() {
+      if (!_montoBsFocusNode.hasFocus) {
+        setState(() {
+          _montoBsError =
+              Validations.validateAmountBsAndDollar(_amountBsController.text);
+        });
+      }
+    });
   }
 
-  Future<void> _cargarMembresias() async {
+  void _cargarMembresias() {
     final membresiasVM =
         Provider.of<MembershipViewmodel>(context, listen: false);
-    final membresias =
-        await membresiasVM.obtenerMembresiasActivasPorUsuario(uid);
 
-    setState(() {
-      _membresiasActivas = membresias;
-      isLoadingMembresias = false;
-      if (_membership.isNotEmpty) {
-        _actualizarRangoFecha(_membership);
-      }
+    membresiasVM.obtenerMembresiasPorUsuario(uid).listen((membresias) {
+      setState(() {
+        _membresiasActivas = membresias;
+        isLoadingMembresias = false;
+        if (_membership.isNotEmpty) {
+          _actualizarRangoFecha(_membership);
+        }
+      });
     });
   }
 
@@ -144,6 +192,17 @@ class _AdminPayFormState extends State<AdminPayForm> {
   }
 
   void _newpay() async {
+    setState(() {
+      _cedError = Validations.validateCed(widget.cedulaController.text);
+      _memberError = Validations.validateMembershipName(_membership);
+    });
+
+    if (widget.formKey.currentState!.validate() && _cedError == null) {
+      setState(() {
+        isLoading = true;
+      });
+    }
+
     if (widget.formKey.currentState!.validate()) {
       final payVM = Provider.of<PayViewModel>(context, listen: false);
 
@@ -207,11 +266,12 @@ class _AdminPayFormState extends State<AdminPayForm> {
           children: [
             Text(
               'Membresías',
-              style: TextStyles.boldPrimaryText(context),
+              style: TextStyles.boldText(context),
             ),
             const SizedBox(height: 5),
             // Dropdown de tipos de membresías activas
             DropdownButtonFormField<String>(
+              focusNode: _memberFocusNode,
               value: _membership.isNotEmpty ? _membership : null,
               items: _membresiasActivas.map((membresia) {
                 return DropdownMenuItem(
@@ -223,6 +283,7 @@ class _AdminPayFormState extends State<AdminPayForm> {
               onChanged: (value) {
                 setState(() {
                   _membership = value ?? '';
+                  _cedError = Validations.validateCed(value);
                   _actualizarRangoFecha(_membership);
                   _calcularMontoTotal();
                 });
@@ -234,16 +295,15 @@ class _AdminPayFormState extends State<AdminPayForm> {
                   borderSide: const BorderSide(color: Colors.grey),
                 ),
               ),
-              validator: (value) => _membership.isEmpty
-                  ? 'Selecciona una membresía válida'
-                  : null,
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              validator: Validations.validateMembershipName,
             ),
             const SizedBox(
               height: 10,
             ),
             Text(
               'Tiempo de membresía',
-              style: TextStyles.boldPrimaryText(context),
+              style: TextStyles.boldText(context),
             ),
             const SizedBox(
               height: 5,
@@ -258,7 +318,7 @@ class _AdminPayFormState extends State<AdminPayForm> {
               children: [
                 Text(
                   '¿Hay promoción?',
-                  style: TextStyles.boldPrimaryText(context),
+                  style: TextStyles.boldText(context),
                 ),
                 SizedBox(
                   width: 12,
@@ -280,7 +340,7 @@ class _AdminPayFormState extends State<AdminPayForm> {
             if (hayPromocion) ...[
               Text(
                 'Promociones',
-                style: TextStyles.boldPrimaryText(context),
+                style: TextStyles.boldText(context),
               ),
               const SizedBox(height: 5),
               DropdownButtonFormField<String>(
@@ -317,7 +377,7 @@ class _AdminPayFormState extends State<AdminPayForm> {
             ],
             Text(
               'Monto total',
-              style: TextStyles.boldPrimaryText(context),
+              style: TextStyles.boldText(context),
             ),
             SizedBox(
               height: 5,
@@ -339,7 +399,7 @@ class _AdminPayFormState extends State<AdminPayForm> {
 
             Text(
               'Tipo de pago',
-              style: TextStyles.boldPrimaryText(context),
+              style: TextStyles.boldText(context),
             ),
             SizedBox(
               height: 5,
@@ -357,6 +417,7 @@ class _AdminPayFormState extends State<AdminPayForm> {
 
             // Campos de monto
             PayAmountField(
+              paymentReferenceController: _paymentReferenceController,
               paymentCurrency: _paymentCurrency,
               amountUsdController: _amountUsdController,
               amountBsController: _amountBsController,
@@ -371,12 +432,19 @@ class _AdminPayFormState extends State<AdminPayForm> {
               height: 55,
               child: ElevatedButton.icon(
                 onPressed: _newpay,
-                icon: Icon(Icons.login, color: theme.colorScheme.onSurface),
+                icon: Icon(
+                  Icons.login,
+                  color: isDarkMode
+                      ? theme.colorScheme.onSurface
+                      : theme.colorScheme.onInverseSurface,
+                ),
                 label: Text(
                   'Registrar pago',
                   style: TextStyle(
                     fontSize: 16,
-                    color: theme.colorScheme.onSurface,
+                    color: isDarkMode
+                        ? theme.colorScheme.onSurface
+                        : theme.colorScheme.onInverseSurface,
                   ),
                 ),
                 style: ElevatedButton.styleFrom(

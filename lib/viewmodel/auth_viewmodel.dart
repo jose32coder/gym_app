@@ -1,5 +1,6 @@
 import 'package:basic_flutter/gymCodeOrSelect/selection_rol_page.dart';
 import 'package:basic_flutter/layouts/client/client_homepage.dart';
+import 'package:basic_flutter/layouts/client/datePersonalsClients/datePersonalsView/selected_date_personal.dart';
 import 'package:basic_flutter/login/sign_in.dart';
 import 'package:basic_flutter/layouts/navigation_menu.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';

@@ -1,5 +1,6 @@
 import 'package:basic_flutter/components/notification_modal.dart';
 import 'package:basic_flutter/components/text_style.dart';
+import 'package:basic_flutter/components/validations.dart';
 import 'package:basic_flutter/layouts/administrator/admin/adminPay/widgets/admin_pay_form.dart';
 import 'package:basic_flutter/viewmodel/person_viewmodel.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -25,7 +26,7 @@ class PayRegister extends StatefulWidget {
 
 class _PayRegisterState extends State<PayRegister> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final TextEditingController cedulaController = TextEditingController();
+  final TextEditingController cedController = TextEditingController();
   final TextEditingController nombreController = TextEditingController();
   final LayerLink _layerLink = LayerLink();
   OverlayEntry? _overlayEntry;
@@ -33,12 +34,26 @@ class _PayRegisterState extends State<PayRegister> {
   bool isCedulaFocused = false;
   final uid = FirebaseAuth.instance.currentUser!.uid;
 
+  late FocusNode _cedFocusNode;
+
   List<Map<String, dynamic>> usuariosEncontrados = [];
   String nombreAsociado = '';
+  String? _cedError;
 
   @override
   void initState() {
     super.initState();
+
+    _cedFocusNode = FocusNode();
+
+    _cedFocusNode.addListener(() {
+      if (!_cedFocusNode.hasFocus) {
+        setState(() {
+          _cedError = Validations.validateCed(cedController.text);
+        });
+        _removeOverlay(); // Cierra overlay al perder foco
+      }
+    });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final usuariosViewModel =
@@ -47,7 +62,7 @@ class _PayRegisterState extends State<PayRegister> {
     });
 
     if (!widget.desdeAdmin) {
-      cedulaController.text = widget.cedula ?? '';
+      cedController.text = widget.cedula ?? '';
       nombreAsociado = widget.nombre ?? '';
       nombreController.text = nombreAsociado;
     }
@@ -57,38 +72,53 @@ class _PayRegisterState extends State<PayRegister> {
     _removeOverlay();
 
     _overlayEntry = OverlayEntry(
-      builder: (context) => Positioned(
-        width: MediaQuery.of(context).size.width - 40,
-        child: CompositedTransformFollower(
-          link: _layerLink,
-          showWhenUnlinked: false,
-          offset: const Offset(0, 60),
-          child: Material(
-            elevation: 4.0,
-            borderRadius: BorderRadius.circular(8),
-            color: Theme.of(context).cardColor,
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: usuarios.length,
-              itemBuilder: (context, index) {
-                final usuario = usuarios[index];
-                return ListTile(
-                  title: Text('${usuario['nombre'] ?? ''}'),
-                  subtitle: Text('Cédula: ${usuario['cedula'] ?? ''}'),
-                  onTap: () {
-                    cedulaController.text = usuario['cedula'] ?? '';
-                    nombreController.text =
-                        '${usuario['nombre'] ?? ''} ${usuario['apellido'] ?? ''}';
+      builder: (context) => GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: () {
+          // Cierra el overlay al hacer tap fuera
+          _removeOverlay();
+          FocusScope.of(context).unfocus(); // Oculta teclado si estaba abierto
+        },
+        child: Stack(
+          children: [
+            Positioned(
+              width: MediaQuery.of(context).size.width - 40,
+              height: MediaQuery.of(context).size.height / 2,
+              child: CompositedTransformFollower(
+                link: _layerLink,
+                showWhenUnlinked: false,
+                offset: const Offset(0, 80),
+                child: Material(
+                  elevation: 4.0,
+                  borderRadius: BorderRadius.circular(8),
+                  color: Theme.of(context).cardColor,
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: usuarios.length,
+                    itemBuilder: (context, index) {
+                      final usuario = usuarios[index];
+                      return ListTile(
+                        title: Text('${usuario['nombre'] ?? ''}'),
+                        subtitle: Text('Cédula: ${usuario['cedula'] ?? ''}'),
+                        onTap: () {
+                          cedController.text = usuario['cedula'] ?? '';
+                          nombreController.text =
+                              '${usuario['nombre'] ?? ''} ${usuario['apellido'] ?? ''}';
 
-                    setState(() {
-                      nombreAsociado = '${usuario['nombre'] ?? ''}';
-                    });
-                    _removeOverlay();
-                  },
-                );
-              },
+                          setState(() {
+                            nombreAsociado = '${usuario['nombre'] ?? ''}';
+                          });
+                          _removeOverlay();
+                          FocusScope.of(context)
+                              .unfocus(); // Oculta teclado tras selección
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -105,9 +135,17 @@ class _PayRegisterState extends State<PayRegister> {
     final usuariosViewModel =
         Provider.of<PersonasViewModel>(context, listen: false);
 
-    final gimnasioId = usuariosViewModel.gimnasioId;
+    final gimnasioId = await usuariosViewModel.obtenerGimnasioIdUsuario();
+
     if (gimnasioId == null || gimnasioId.isEmpty) {
       print('Gimnasio ID no disponible');
+      return;
+    }
+
+    // No buscar ni mostrar overlay si el campo está vacío
+    if (value.trim().isEmpty) {
+      usuariosEncontrados = [];
+      _removeOverlay();
       return;
     }
 
@@ -118,13 +156,15 @@ class _PayRegisterState extends State<PayRegister> {
       usuariosEncontrados = usuarios;
       _showOverlay(usuarios);
     } else {
+      usuariosEncontrados = [];
       _removeOverlay();
     }
   }
 
   @override
   void dispose() {
-    cedulaController.dispose();
+    cedController.dispose();
+    _cedFocusNode.dispose();
     _removeOverlay();
     super.dispose();
   }
@@ -132,6 +172,7 @@ class _PayRegisterState extends State<PayRegister> {
   @override
   Widget build(BuildContext context) {
     bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -169,13 +210,15 @@ class _PayRegisterState extends State<PayRegister> {
             children: [
               Text(
                 'Cédula',
-                style: TextStyles.boldPrimaryText(context),
+                style: TextStyles.boldText(context),
               ),
               const SizedBox(height: 5),
               CompositedTransformTarget(
                 link: _layerLink,
                 child: TextFormField(
-                  controller: cedulaController,
+                  focusNode: _cedFocusNode,
+                  keyboardType: TextInputType.number,
+                  controller: cedController,
                   readOnly: widget.desdeAdmin,
                   onTap: () {
                     if (widget.desdeAdmin) {
@@ -188,6 +231,9 @@ class _PayRegisterState extends State<PayRegister> {
                   onChanged: (value) {
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       buscarUsuariosPorCedula(value);
+                    });
+                    setState(() {
+                      _cedError = Validations.validateCed(value);
                     });
                   },
                   decoration: InputDecoration(
@@ -206,13 +252,19 @@ class _PayRegisterState extends State<PayRegister> {
                         nombreAsociado,
                         style: TextStyle(
                           fontWeight: FontWeight.w500,
-                          color: isDarkMode ? Colors.white70 : Colors.black54,
+                          color: isDarkMode
+                              ? theme.colorScheme.onInverseSurface
+                              : theme.colorScheme.onSurface,
                         ),
                       ),
                     ),
-                    fillColor: isDarkMode ? Colors.grey.shade800 : Colors.white,
+                    fillColor: isDarkMode
+                        ? theme.colorScheme.onInverseSurface
+                        : theme.colorScheme.onSurface,
                     filled: true,
                   ),
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  validator: Validations.validateCed,
                 ),
               ),
 
@@ -221,7 +273,7 @@ class _PayRegisterState extends State<PayRegister> {
               // Widget de pago de membresía
               AdminPayForm(
                 formKey: _formKey,
-                cedulaController: cedulaController,
+                cedulaController: cedController,
                 nombreController: nombreController,
               ),
             ],

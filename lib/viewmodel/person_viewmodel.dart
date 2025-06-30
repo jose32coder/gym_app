@@ -26,6 +26,41 @@ class PersonasViewModel extends ChangeNotifier {
   String? gimnasioId;
   late String codigo;
 
+  // Helper para obtener los primeros 8 caracteres con validación
+  String _codigoGimnasioCorto(String codigo) {
+    if (codigo.isEmpty) throw Exception('Código de gimnasio vacío');
+    return codigo.length >= 8 ? codigo.substring(0, 8) : codigo;
+  }
+
+  Future<String?> obtenerGimnasioIdUsuario() async {
+    final user = _auth.currentUser;
+    if (user == null) return null;
+
+    final userDoc = await _firestore.collection('usuarios').doc(user.uid).get();
+
+    if (!userDoc.exists || userDoc.data() == null) return null;
+
+    final data = userDoc.data()!;
+    final codigoGimnasioUsuario = data['codigoGimnasio'] ?? '';
+
+    if (codigoGimnasioUsuario.isEmpty) return null;
+
+    // Aquí extraemos los primeros 8 caracteres
+    final codigoCorto = codigoGimnasioUsuario.length >= 8
+        ? codigoGimnasioUsuario.substring(0, 8)
+        : codigoGimnasioUsuario;
+
+    final gimnasioQuery = await _firestore
+        .collection('gimnasios')
+        .where('codigo', isEqualTo: codigoCorto)
+        .limit(1)
+        .get();
+
+    if (gimnasioQuery.docs.isEmpty) return null;
+
+    return gimnasioQuery.docs.first.id;
+  }
+
   Future<void> cargarUsuarios() async {
     _isLoading = true;
     _errorMessage = null;
@@ -37,23 +72,19 @@ class PersonasViewModel extends ChangeNotifier {
         _usuarios = [];
         rolUsuario = null;
         usuarioActivoId = null;
-        gimnasioId = '';
         _isLoading = false;
         notifyListeners();
         return;
       }
 
       usuarioActivoId = user.uid;
-      print('Usuario activo ID: $usuarioActivoId');
 
-      // Obtén el documento del usuario para saber su rol
       final userDoc =
           await _firestore.collection('usuarios').doc(user.uid).get();
 
       if (!userDoc.exists || userDoc.data() == null) {
         _usuarios = [];
         rolUsuario = null;
-        gimnasioId = '';
         _isLoading = false;
         notifyListeners();
         return;
@@ -62,31 +93,43 @@ class PersonasViewModel extends ChangeNotifier {
       final data = userDoc.data()!;
       rolUsuario = data['tipo'] as String? ?? '';
 
-      // Obtén el gimnasioId desde tu servicio o directamente del documento
-      gimnasioId = await _gimnasioService
-          .obtenerGimnasioIdDesdeUsuario(usuarioActivoId!);
-      print('Gimnasio ID: $gimnasioId');
-      codigo = await _gimnasioService.obtenerCodigoGimnasio(gimnasioId!);
+      final codigoGimnasioUsuario = data['codigoGimnasio'] ?? '';
 
-      print('Código gimnasio: $codigo');
+      if (codigoGimnasioUsuario.isEmpty) {
+        throw Exception('El usuario no tiene código de gimnasio asignado');
+      }
+
+      final codigoCorto = _codigoGimnasioCorto(codigoGimnasioUsuario);
+
+      final gimnasioQuery = await _firestore
+          .collection('gimnasios')
+          .where('codigo', isEqualTo: codigoCorto)
+          .limit(1)
+          .get();
+
+      if (gimnasioQuery.docs.isEmpty) {
+        throw Exception('Gimnasio con código $codigoCorto no encontrado');
+      }
+
+      final gimnasioDoc = gimnasioQuery.docs.first;
+      final gimnasioId = gimnasioDoc.id;
 
       if (rolUsuario == 'Cliente') {
         _usuarios = [];
       } else if (rolUsuario == 'Administrador' || rolUsuario == 'Dueño') {
-        _usuarios = await obtenerUsuariosDeGimnasio(gimnasioId!);
-        print('Usuarios obtenidos: $_usuarios');
+        _usuarios = await obtenerUsuariosDeGimnasio(gimnasioId);
       } else {
         _usuarios = [];
       }
     } catch (e) {
       _errorMessage = 'Error al cargar usuarios: $e';
       _usuarios = [];
-      print('Error: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
+
 
   Future<List<Map<String, dynamic>>> obtenerUsuariosDeGimnasio(
       String gimnasioId) async {
@@ -94,40 +137,12 @@ class PersonasViewModel extends ChangeNotifier {
         .collection('gimnasios')
         .doc(gimnasioId)
         .collection('usuarios')
+        .where('tipo', isEqualTo: 'Cliente')
         .get();
 
     return querySnapshot.docs
         .map((doc) => {'uid': doc.id, ...doc.data()})
         .toList();
-  }
-
-  Future<void> cargarTipoUsuario() async {
-    _isLoading = true;
-    notifyListeners();
-
-    try {
-      final user = _auth.currentUser;
-      if (user == null) {
-        tipoUsuario = null;
-        _isLoading = false;
-        notifyListeners();
-        return;
-      }
-
-      final doc = await _firestore.collection('usuarios').doc(user.uid).get();
-
-      if (doc.exists && doc.data() != null) {
-        tipoUsuario = doc.data()!['tipo'] as String?;
-      } else {
-        tipoUsuario = null;
-      }
-    } catch (e) {
-      tipoUsuario = null;
-      // Manejar el error (log, mensaje, etc.)
-    }
-
-    _isLoading = false;
-    notifyListeners();
   }
 
   Future<String> registerNewUserFromAdmin({
@@ -170,9 +185,8 @@ class PersonasViewModel extends ChangeNotifier {
       await secondaryAuth.signOut();
       await secondaryApp.delete();
 
-      return newUid; // 👈 retornas el UID creado
+      return newUid;
     } catch (e) {
-      print('Error al registrar usuario desde admin: $e');
       rethrow;
     }
   }
@@ -187,7 +201,6 @@ class PersonasViewModel extends ChangeNotifier {
     String? codeGym,
   }) async {
     try {
-      // Obtienes el documento del usuario
       final userDoc =
           await _firestore.collection('usuarios').doc(usuarioId).get();
       if (!userDoc.exists) {
@@ -201,23 +214,22 @@ class PersonasViewModel extends ChangeNotifier {
         throw Exception('El usuario no tiene código de gimnasio asignado');
       }
 
-      // Buscas el gimnasio cuyo código coincida con los 8 primeros caracteres
+      final codigoCorto = _codigoGimnasioCorto(codigoGimnasioUsuario);
+
       final gimnasioQuery = await _firestore
           .collection('gimnasios')
-          .where('codigo', isEqualTo: codigoGimnasioUsuario.substring(0, 8))
+          .where('codigo', isEqualTo: codigoCorto)
           .limit(1)
           .get();
 
       if (gimnasioQuery.docs.isEmpty) {
-        throw Exception(
-            'Gimnasio con código ${codigoGimnasioUsuario.substring(0, 8)} no encontrado');
+        throw Exception('Gimnasio con código $codigoCorto no encontrado');
       }
 
       final gimnasioDoc = gimnasioQuery.docs.first;
       final gimnasioId = gimnasioDoc.id;
       final nombreGimnasio = gimnasioDoc.data()['nombre'] ?? 'Sin nombre';
 
-      // Preparas los datos a guardar
       final nombre = userData['nombre'] ?? 'Sin nombre';
       final apellido = userData['apellido'] ?? 'Sin apellido';
       final cedula = userData['cedula'] ?? 'Sin cédula';
@@ -239,7 +251,6 @@ class PersonasViewModel extends ChangeNotifier {
             tipoUsuario == 'Cliente' ? FieldValue.serverTimestamp() : null,
       };
 
-      // Guardas en gimnasios/{gimnasioId}/usuarios/{usuarioId}
       await _firestore
           .collection('gimnasios')
           .doc(gimnasioId)
@@ -247,7 +258,6 @@ class PersonasViewModel extends ChangeNotifier {
           .doc(usuarioId)
           .set(asociacionData);
 
-      // Guardas en usuarios/{usuarioId}/gimnasios/{gimnasioId}
       await _firestore
           .collection('usuarios')
           .doc(usuarioId)
@@ -259,11 +269,7 @@ class PersonasViewModel extends ChangeNotifier {
         'codigoGimnasio': codigoGimnasioUsuario,
         'habilitado': true,
       });
-
-      print(
-          'Asociación de usuario $usuarioId con gimnasio $gimnasioId completada.');
     } catch (e) {
-      print('Error en asociarUsuarioAGimnasioPorCodigo: $e');
       rethrow;
     }
   }
@@ -277,15 +283,14 @@ class PersonasViewModel extends ChangeNotifier {
           .collection('usuarios')
           .where('cedula', isGreaterThanOrEqualTo: cedulaBusqueda)
           .where('cedula', isLessThanOrEqualTo: cedulaBusqueda + '\uf8ff')
+          // .where('tipo', isEqualTo: 'Cliente') // Comentado para test
           .get();
 
       return querySnapshot.docs
           .map((doc) => {'uid': doc.id, ...doc.data()})
           .toList();
     } catch (e) {
-      print('Error buscando usuarios por cédula: $e');
       return [];
     }
   }
-
 }
