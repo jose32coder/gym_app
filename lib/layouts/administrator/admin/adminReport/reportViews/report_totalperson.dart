@@ -146,7 +146,7 @@ class _ReportTotalpersonState extends State<ReportTotalperson> {
                   fontWeight: pw.FontWeight.bold,
                   fontSize: 14,
                 ),
-                cellStyle: pw.TextStyle(fontSize: 12),
+                cellStyle: const pw.TextStyle(fontSize: 12),
                 headerDecoration:
                     const pw.BoxDecoration(color: PdfColors.grey300),
                 headerAlignment: pw.Alignment.center,
@@ -154,11 +154,11 @@ class _ReportTotalpersonState extends State<ReportTotalperson> {
                 border:
                     pw.TableBorder.all(width: 0.5, color: PdfColors.grey500),
                 columnWidths: {
-                  0: pw.FlexColumnWidth(4), // Nombre Completo
-                  1: pw.FlexColumnWidth(2), // Cédula
-                  2: pw.FlexColumnWidth(3), // Membresía
-                  4: pw.FlexColumnWidth(3), // Estatus
-                  5: pw.FlexColumnWidth(3), // Tipo
+                  0: const pw.FlexColumnWidth(4), // Nombre Completo
+                  1: const pw.FlexColumnWidth(2), // Cédula
+                  2: const pw.FlexColumnWidth(3), // Membresía
+                  4: const pw.FlexColumnWidth(3), // Estatus
+                  5: const pw.FlexColumnWidth(3), // Tipo
                 },
               ),
             ],

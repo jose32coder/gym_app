@@ -84,7 +84,7 @@ class _TablePersonsState extends State<TablePersons> {
                             ),
                           ],
                         ),
-                        SizedBox(
+                        const SizedBox(
                           width: 12,
                         ),
                         Expanded(
@@ -127,7 +127,7 @@ class _TablePersonsState extends State<TablePersons> {
                         ),
                       ],
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 20,
                     ),
                     TextField(
@@ -160,10 +160,10 @@ class _TablePersonsState extends State<TablePersons> {
                 ),
               ),
               if (personVM.isLoading)
-                Container(
+                SizedBox(
                   height: MediaQuery.of(context).size.height /
                       2, // ocupa toda la altura
-                  child: Center(
+                  child: const Center(
                     child: CircularProgressIndicator(),
                   ),
                 )

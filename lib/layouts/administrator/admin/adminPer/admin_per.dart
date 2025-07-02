@@ -1,8 +1,6 @@
 import 'package:basic_flutter/components/notification_modal.dart';
 import 'package:basic_flutter/components/table_persons.dart';
 import 'package:basic_flutter/components/text_style.dart';
-import 'package:basic_flutter/layouts/administrator/persons/add_person.dart';
-import 'package:basic_flutter/layouts/administrator/preferences/preferencesView/createCode/create_code.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 

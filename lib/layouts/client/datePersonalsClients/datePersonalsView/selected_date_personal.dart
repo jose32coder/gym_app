@@ -40,11 +40,11 @@ class _SelectedDatePersonalState extends State<SelectedDatePersonal> {
                 style: TextStyle(fontSize: 26),
               ),
               const SizedBox(height: 5),
-              Center(
+              const Center(
                 child: Text(
                   '¿Por qué tu edad? Esto ayuda a mejorar tu experiencia en la app',
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 14, fontWeight: FontWeight.bold),
                 ),
               ),

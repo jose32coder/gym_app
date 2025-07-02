@@ -208,7 +208,7 @@ class _AdminPayFormState extends State<AdminPayForm> {
 
       if (_membership.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Debe seleccionar una membresía')),
+          const SnackBar(content: Text('Debe seleccionar una membresía')),
         );
         return;
       }
@@ -216,7 +216,7 @@ class _AdminPayFormState extends State<AdminPayForm> {
       double? monto = double.tryParse(_amountTotalController.text);
       if (monto == null || monto <= 0) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Monto inválido')),
+          const SnackBar(content: Text('Monto inválido')),
         );
         return;
       }
@@ -233,7 +233,7 @@ class _AdminPayFormState extends State<AdminPayForm> {
       );
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Pago registrado correctamente')),
+        const SnackBar(content: Text('Pago registrado correctamente')),
       );
 
       widget.formKey.currentState!.reset();
@@ -292,7 +292,6 @@ class _AdminPayFormState extends State<AdminPayForm> {
                 hintText: 'Tipo de Membresía',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: Colors.grey),
                 ),
               ),
               autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -320,7 +319,7 @@ class _AdminPayFormState extends State<AdminPayForm> {
                   '¿Hay promoción?',
                   style: TextStyles.boldText(context),
                 ),
-                SizedBox(
+                const SizedBox(
                   width: 12,
                 ),
                 Switch(
@@ -334,7 +333,7 @@ class _AdminPayFormState extends State<AdminPayForm> {
                 ),
               ],
             ),
-            SizedBox(
+            const SizedBox(
               height: 16,
             ),
             if (hayPromocion) ...[
@@ -371,7 +370,7 @@ class _AdminPayFormState extends State<AdminPayForm> {
                     ? 'Selecciona una promoción válida'
                     : null,
               ),
-              SizedBox(
+              const SizedBox(
                 height: 16,
               ),
             ],
@@ -379,7 +378,7 @@ class _AdminPayFormState extends State<AdminPayForm> {
               'Monto total',
               style: TextStyles.boldText(context),
             ),
-            SizedBox(
+            const SizedBox(
               height: 5,
             ),
             TextFormField(
@@ -401,7 +400,7 @@ class _AdminPayFormState extends State<AdminPayForm> {
               'Tipo de pago',
               style: TextStyles.boldText(context),
             ),
-            SizedBox(
+            const SizedBox(
               height: 5,
             ),
             // Selector de moneda

@@ -1,6 +1,5 @@
 import 'package:basic_flutter/gymCodeOrSelect/selection_rol_page.dart';
 import 'package:basic_flutter/layouts/client/client_homepage.dart';
-import 'package:basic_flutter/layouts/client/datePersonalsClients/datePersonalsView/selected_date_personal.dart';
 import 'package:basic_flutter/login/sign_in.dart';
 import 'package:basic_flutter/layouts/navigation_menu.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -97,6 +96,7 @@ class AuthViewmodel extends ChangeNotifier {
     }
   }
 
+
   Future<void> saveBasicUserData({
     required String ced,
     required String uid,
@@ -153,6 +153,23 @@ class AuthViewmodel extends ChangeNotifier {
     }
   }
 
+  Future<void> deleteAccountTotal() async {
+    final user = _auth.currentUser;
+    if (user == null) throw Exception('No hay usuario autenticado');
+
+    try {
+      // Primero elimina el usuario de Authentication
+      await user.delete();
+
+      // Luego elimina los documentos de Firestore
+      final userId = user.uid;
+      await _firestore.collection('usuarios').doc(userId).delete();
+    } on FirebaseAuthException catch (e) {
+      // Aquí puedes manejar error, como sesión no reciente (requiere re-login)
+      throw Exception('Error al eliminar usuario: ${e.message}');
+    }
+  }
+
   Future<void> logout() async {
     await _auth.signOut();
   }
@@ -174,6 +191,7 @@ class AuthViewmodel extends ChangeNotifier {
         final data = doc.data()!;
         final rol = data['tipo'] as String?;
         final codigoGimnasio = data['codigoGimnasio'] as String?;
+        final nombre = data['nombre'] as String?;
 
         if (rol == null) {
           return const SelectionRolPage();
@@ -188,7 +206,7 @@ class AuthViewmodel extends ChangeNotifier {
           return const SelectionRolPage();
         }
 
-        return const NavigationMenu();
+        return NavigationMenu(nombreUsuario: nombre);
       });
     });
   }

@@ -34,7 +34,7 @@ class ClienteHomePage extends StatelessWidget {
           const SizedBox(height: 20),
           Center(
             child: Text(
-              '${user.displayName ?? 'Cliente'}',
+              user.displayName ?? 'Cliente',
               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
           ),

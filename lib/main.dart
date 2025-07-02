@@ -56,7 +56,7 @@ class MainApp extends StatelessWidget {
       themeMode: ThemeMode.system,
       theme: ThemeData(
         colorScheme: ColorScheme.light(
-          primary: Colors.lightBlue.shade700,
+          primary: Colors.lightBlue.shade300,
           secondary: Colors.lightBlue.shade300,
           surface: Colors.white,
         ),

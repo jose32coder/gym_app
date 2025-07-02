@@ -1,6 +1,5 @@
 import 'package:basic_flutter/components/notification_modal.dart';
 import 'package:basic_flutter/components/text_style.dart';
-import 'package:basic_flutter/layouts/administrator/preferences/preferencesView/aboutViews/pref_about_app.dart';
 import 'package:basic_flutter/layouts/administrator/preferences/preferencesView/createCode/create_code.dart';
 import 'package:basic_flutter/layouts/administrator/preferences/preferencesView/pref_account_and_data.dart';
 import 'package:basic_flutter/layouts/administrator/preferences/preferencesView/pref_notifications.dart';

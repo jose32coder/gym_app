@@ -269,7 +269,7 @@ class _SignUpState extends State<SignUp> {
                                     AutovalidateMode.onUserInteraction,
                                 validator: Validations.validateCed,
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 height: 14,
                               ),
                               TextFormField(
@@ -311,7 +311,7 @@ class _SignUpState extends State<SignUp> {
                                     AutovalidateMode.onUserInteraction,
                                 validator: Validations.validateName,
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 height: 14,
                               ),
                               DropdownButtonFormField<String>(
@@ -369,7 +369,7 @@ class _SignUpState extends State<SignUp> {
                                     AutovalidateMode.onUserInteraction,
                                 validator: Validations.validateEmail,
                               ),
-                              SizedBox(height: 14),
+                              const SizedBox(height: 14),
                               TextFormField(
                                 controller: _passwordController,
                                 focusNode: _passwordFocusNode,

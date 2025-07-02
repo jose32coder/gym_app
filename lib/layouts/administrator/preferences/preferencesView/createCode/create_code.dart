@@ -132,7 +132,7 @@ class _CreateCodeState extends State<CreateCode> {
           child: Column(
             children: [
               if (codigoGenerado != null)
-                Text(
+                const Text(
                   'Ultimo codigo generado',
                   style: TextStyle(fontSize: 18),
                 ),
@@ -252,7 +252,7 @@ class _CreateCodeState extends State<CreateCode> {
                         ),
                       ],
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 20,
                     ),
                     Center(
@@ -293,6 +293,14 @@ class _CreateCodeState extends State<CreateCode> {
                 height: 55,
                 child: ElevatedButton(
                   onPressed: obtenerCodigoGimnasio,
+                  style: ElevatedButton.styleFrom(
+                    minimumSize:
+                        const Size(0, 45), // ancho 0 porque Expanded controla
+                    backgroundColor: theme.colorScheme.primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
                   child: Text(
                     'Generar nuevo código',
                     style: TextStyle(
@@ -300,14 +308,6 @@ class _CreateCodeState extends State<CreateCode> {
                           ? theme.colorScheme.onSurface
                           : theme.colorScheme.onInverseSurface,
                       fontSize: 18,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    minimumSize:
-                        const Size(0, 45), // ancho 0 porque Expanded controla
-                    backgroundColor: theme.colorScheme.primary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
                     ),
                   ),
                 ),

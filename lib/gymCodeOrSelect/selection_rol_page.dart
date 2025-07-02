@@ -96,7 +96,7 @@ class _SelectionRolPageState extends State<SelectionRolPage> {
                         context,
                         MaterialPageRoute(
                             builder: (context) =>
-                                SelectGym(rol: 'Administrador')),
+                                const SelectGym(rol: 'Administrador')),
                       );
                     },
                   ),
@@ -121,7 +121,7 @@ class _SelectionRolPageState extends State<SelectionRolPage> {
                       );
                     },
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 50,
                   ),
                   SizedBox(

@@ -128,7 +128,7 @@ class _MembershipFilterState extends State<MembershipFilter> {
                     ),
                   ),
                 ),
-                SizedBox(
+                const SizedBox(
                   width: 12,
                 ),
                 SizedBox(

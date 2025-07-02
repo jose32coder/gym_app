@@ -13,7 +13,7 @@ import 'package:provider/provider.dart';
 class MembershipForm extends StatefulWidget {
   final MembershipModel? membershipEdit;
 
-  const MembershipForm({Key? key, this.membershipEdit}) : super(key: key);
+  const MembershipForm({super.key, this.membershipEdit});
 
   @override
   State<MembershipForm> createState() => _MembershipFormState();
@@ -253,7 +253,7 @@ class _MembershipFormState extends State<MembershipForm> {
                           'Nombre',
                           style: TextStyles.boldText(context),
                         ),
-                        SizedBox(
+                        const SizedBox(
                           height: 5,
                         ),
                         TextFormField(
@@ -282,7 +282,7 @@ class _MembershipFormState extends State<MembershipForm> {
                           'Precio',
                           style: TextStyles.boldText(context),
                         ),
-                        SizedBox(
+                        const SizedBox(
                           height: 5,
                         ),
                         TextFormField(
@@ -312,7 +312,7 @@ class _MembershipFormState extends State<MembershipForm> {
                           'Tipo',
                           style: TextStyles.boldText(context),
                         ),
-                        SizedBox(
+                        const SizedBox(
                           height: 5,
                         ),
                         DropdownButtonFormField<String>(

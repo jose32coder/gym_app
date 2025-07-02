@@ -8,13 +8,13 @@ class FilterReport extends StatelessWidget {
   final VoidCallback onGenerateExcel;
 
   const FilterReport({
-    Key? key,
+    super.key,
     required this.periodos,
     required this.selectedPeriodo,
     required this.onPeriodoChanged,
     required this.onGeneratePDF,
     required this.onGenerateExcel,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -113,7 +113,7 @@ class _ExportButton extends StatelessWidget {
   final VoidCallback onPressed;
 
   const _ExportButton({
-    Key? key,
+    super.key,
     required this.label,
     required this.icon,
     required this.iconColor,
@@ -123,7 +123,7 @@ class _ExportButton extends StatelessWidget {
     required this.iconSize,
     required this.tooltip,
     required this.onPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

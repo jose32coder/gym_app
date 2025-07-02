@@ -186,7 +186,7 @@ class _AdminPromosState extends State<AdminPromos> {
                                         ?.copyWith(fontWeight: FontWeight.w600),
                                   ),
                                   subtitle: Text(
-                                    '${p.discount?.toStringAsFixed(0) ?? 0}% descuento individual',
+                                    '${p.discount.toStringAsFixed(0) ?? 0}% descuento individual',
                                     style: theme.textTheme.bodyMedium,
                                   ),
                                   trailing: Wrap(

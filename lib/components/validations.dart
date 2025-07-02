@@ -27,12 +27,39 @@ class Validations {
     return null;
   }
 
+  static String? validatePhone(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Este campo es obligatorio';
+    }
+
+    final regex = RegExp(r'^(0424|0412|0414|0416|0426)\d{7}$');
+
+    if (!regex.hasMatch(value)) {
+      return 'Número de teléfono inválido';
+    }
+
+    return null;
+  }
+
   static String? validatePassword(String? value) {
     if (value == null || value.isEmpty) {
       return 'La contraseña es obligatoria';
     }
     if (value.length < 6) {
       return 'Debe tener al menos 6 caracteres';
+    }
+    return null;
+  }
+
+  static String? validateNewPassword(String value) {
+    if (value.length < 6) {
+      return 'Debe tener al menos 6 caracteres';
+    }
+    if (!RegExp(r'[A-Z]').hasMatch(value)) {
+      return 'Debe contener al menos una mayúscula';
+    }
+    if (!RegExp(r'\d').hasMatch(value)) {
+      return 'Debe contener al menos un número';
     }
     return null;
   }
@@ -95,7 +122,6 @@ class Validations {
     return null;
   }
 
-
   static String? validatePromotionName(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'El nombre de la promoción es obligatorio';
@@ -111,7 +137,7 @@ class Validations {
     // Limpiar: eliminar espacios y convertir a mayúsculas
     String cleanValue = value.replaceAll(' ', '').toUpperCase();
 
-    final regex = RegExp(r'^(?:[VE]?)?\d{7,9}$');
+    final regex = RegExp(r'^(?:[VE]?)?\d{7,8}$');
 
     if (!regex.hasMatch(cleanValue)) {
       return 'Cédula inválida. Ej: V12345678 o 12345678';

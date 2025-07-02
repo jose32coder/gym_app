@@ -428,7 +428,7 @@ class _TextFormPageState extends State<TextFormPage> {
               });
             },
           ),
-          SizedBox(
+          const SizedBox(
             height: 20,
           ),
           Text(
@@ -492,7 +492,7 @@ class _TextFormPageState extends State<TextFormPage> {
             crossAxisAlignment: CrossAxisAlignment.start, // Alinea por arriba
             children: [
               Expanded(
-                child: Container(
+                child: SizedBox(
                   height: 80, // Altura fija suficiente para input + error
                   child: TextFormField(
                     controller: _codeController,

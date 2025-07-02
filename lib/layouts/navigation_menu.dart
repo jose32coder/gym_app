@@ -2,10 +2,10 @@ import 'package:basic_flutter/layouts/administrator/admin/administration.dart';
 import 'package:basic_flutter/layouts/administrator/preferences/preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:basic_flutter/layouts/administrator/home/home.dart';
-import 'package:basic_flutter/layouts/administrator/persons/add_person.dart';
 
 class NavigationMenu extends StatefulWidget {
-  const NavigationMenu({super.key});
+  final String? nombreUsuario;
+  const NavigationMenu({super.key, this.nombreUsuario});
 
   @override
   State<NavigationMenu> createState() => _NavigationMenuState();
@@ -14,18 +14,18 @@ class NavigationMenu extends StatefulWidget {
 class _NavigationMenuState extends State<NavigationMenu> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = [
-    const Home(),
-    const Administration(),
-    const Preferences(),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final List<Widget> screens = [
+      Home(nombreUsuario: widget.nombreUsuario),
+      const Administration(),
+      const Preferences(),
+    ];
+
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
-        children: _screens,
+        children: screens,
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,

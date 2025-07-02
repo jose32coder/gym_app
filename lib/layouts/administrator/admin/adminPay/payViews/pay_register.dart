@@ -258,9 +258,7 @@ class _PayRegisterState extends State<PayRegister> {
                         ),
                       ),
                     ),
-                    fillColor: isDarkMode
-                        ? theme.colorScheme.onInverseSurface
-                        : theme.colorScheme.onSurface,
+                    fillColor: theme.colorScheme.onInverseSurface,
                     filled: true,
                   ),
                   autovalidateMode: AutovalidateMode.onUserInteraction,

@@ -120,6 +120,13 @@ class _SelectGymState extends State<SelectGym> {
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () => Navigator.pop(context),
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(0, 45),
+                          backgroundColor: theme.colorScheme.primary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
                         child: Text(
                           'Cancelar',
                           style: TextStyle(
@@ -127,13 +134,6 @@ class _SelectGymState extends State<SelectGym> {
                             color: isDarkMode
                                 ? theme.colorScheme.onSurface
                                 : theme.colorScheme.onInverseSurface,
-                          ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: const Size(0, 45),
-                          backgroundColor: theme.colorScheme.primary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
                           ),
                         ),
                       ),
@@ -275,6 +275,13 @@ class _SelectGymState extends State<SelectGym> {
                           child: ElevatedButton(
                             onPressed: () =>
                                 _showCodeDialog(context, gimnasio.id, nombre),
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: const Size(double.infinity, 45),
+                              backgroundColor: theme.colorScheme.primary,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
                             child: Text(
                               'Registrarse',
                               style: TextStyle(
@@ -284,16 +291,9 @@ class _SelectGymState extends State<SelectGym> {
                                     : theme.colorScheme.onInverseSurface,
                               ),
                             ),
-                            style: ElevatedButton.styleFrom(
-                              minimumSize: const Size(double.infinity, 45),
-                              backgroundColor: theme.colorScheme.primary,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
                           ),
                         ),
-                        SizedBox(
+                        const SizedBox(
                           height: 10,
                         )
                       ],

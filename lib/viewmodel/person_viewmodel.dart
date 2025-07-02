@@ -61,6 +61,18 @@ class PersonasViewModel extends ChangeNotifier {
     return gimnasioQuery.docs.first.id;
   }
 
+  List<Map<String, dynamic>> get ultimosClientes {
+    final sorted = List<Map<String, dynamic>>.from(usuarios);
+    sorted.sort((a, b) {
+      final fechaA =
+          DateTime.tryParse(a['fechaRegistro'] ?? '') ?? DateTime(2000);
+      final fechaB =
+          DateTime.tryParse(b['fechaRegistro'] ?? '') ?? DateTime(2000);
+      return fechaB.compareTo(fechaA);
+    });
+    return sorted.take(8).toList();
+  }
+
   Future<void> cargarUsuarios() async {
     _isLoading = true;
     _errorMessage = null;
@@ -130,7 +142,6 @@ class PersonasViewModel extends ChangeNotifier {
     }
   }
 
-
   Future<List<Map<String, dynamic>>> obtenerUsuariosDeGimnasio(
       String gimnasioId) async {
     final querySnapshot = await _firestore
@@ -143,6 +154,32 @@ class PersonasViewModel extends ChangeNotifier {
     return querySnapshot.docs
         .map((doc) => {'uid': doc.id, ...doc.data()})
         .toList();
+  }
+
+  Future<Map<String, dynamic>?> obtenerDocumentoEnSubcoleccion({
+    required String coleccionPadre,
+    required String? docPadreId,
+    required String subcoleccion,
+    required String docHijoId,
+  }) async {
+    try {
+      final ref = _firestore
+          .collection(coleccionPadre)
+          .doc(docPadreId)
+          .collection(subcoleccion)
+          .doc(docHijoId);
+
+      final snapshot = await ref.get();
+
+      if (snapshot.exists) {
+        return snapshot.data();
+      } else {
+        return null;
+      }
+    } catch (e) {
+      _errorMessage = 'Error al obtener documento en subcolección.';
+      rethrow;
+    }
   }
 
   Future<String> registerNewUserFromAdmin({
@@ -282,7 +319,7 @@ class PersonasViewModel extends ChangeNotifier {
           .doc(gimnasioId)
           .collection('usuarios')
           .where('cedula', isGreaterThanOrEqualTo: cedulaBusqueda)
-          .where('cedula', isLessThanOrEqualTo: cedulaBusqueda + '\uf8ff')
+          .where('cedula', isLessThanOrEqualTo: '$cedulaBusqueda\uf8ff')
           // .where('tipo', isEqualTo: 'Cliente') // Comentado para test
           .get();
 
@@ -291,6 +328,59 @@ class PersonasViewModel extends ChangeNotifier {
           .toList();
     } catch (e) {
       return [];
+    }
+  }
+
+  Future<void> actualizarDatosUsuario({
+    required String usuarioId,
+    String? gimnasioId,
+    required Map<String, dynamic> datosCompletos,
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    if (usuarioId.isEmpty) {
+      _errorMessage = 'ID de usuario o gimnasio no proporcionado.';
+      _isLoading = false;
+      notifyListeners();
+      return;
+    }
+
+    try {
+      final Map<String, dynamic> datosActualizados = {
+        'nombre': datosCompletos['nombre'] ?? 'Sin nombre',
+        'apellido': datosCompletos['apellido'] ?? 'Sin apellido',
+        'cedula': datosCompletos['cedula'] ?? '',
+        'telefono': datosCompletos['telefono'] ?? '',
+      };
+
+      final Map<String, dynamic> datosGimnasio = {
+        'nombre': datosActualizados['nombre'],
+        'apellido': datosActualizados['apellido'],
+        'cedula': datosActualizados['cedula'],
+        'telefono': datosActualizados['telefono'],
+      };
+
+      final batch = _firestore.batch();
+
+      final usuarioRef = _firestore.collection('usuarios').doc(usuarioId);
+      batch.set(usuarioRef, datosActualizados, SetOptions(merge: true));
+
+      final usuarioGimnasioRef = _firestore
+          .collection('gimnasios')
+          .doc(gimnasioId)
+          .collection('usuarios')
+          .doc(usuarioId);
+      batch.set(usuarioGimnasioRef, datosGimnasio, SetOptions(merge: true));
+
+      await batch.commit();
+    } catch (e) {
+      _errorMessage = 'Error al actualizar datos del usuario.';
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 }
