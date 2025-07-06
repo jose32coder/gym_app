@@ -1,4 +1,5 @@
 import 'package:basic_flutter/components/text_style.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class PersonDetailsModal extends StatelessWidget {
@@ -12,6 +13,11 @@ class PersonDetailsModal extends StatelessWidget {
     required this.onClose,
     required this.isDarkMode,
   });
+
+  String _formatDate(DateTime date) {
+    // Puedes usar intl para un formateo más sofisticado o algo simple así:
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,14 +42,15 @@ class PersonDetailsModal extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Detalles de ${persona['nombre']} ${persona['apellido']}',
-                      style: TextStyles.boldPrimaryText(context)
+                      '${persona['nombre']} ${persona['apellido']}',
+                      style:
+                          TextStyles.boldText(context)
                           .copyWith(fontSize: 20),
                     ),
                     const SizedBox(height: 20),
+                    _buildDetailRow('Cédula', persona['cedula'], theme),
                     _buildDetailRow('Nombre', persona['nombre'], theme),
                     _buildDetailRow('Apellido', persona['apellido'], theme),
-                    _buildDetailRow('Cédula', persona['cedula'], theme),
                     _buildDetailRow('Estado', persona['estado'], theme),
                     _buildDetailRow('Habilitado',
                         (persona['habilitado'] == true) ? 'Sí' : 'No', theme),
@@ -51,6 +58,15 @@ class PersonDetailsModal extends StatelessWidget {
                         persona['membresia'] ?? 'No aplica', theme),
                     _buildDetailRow(
                         'Tipo', persona['tipo'] ?? 'No aplica', theme),
+                    _buildDetailRow(
+                      'Fecha de Registro',
+                      persona['fechaRegistro'] != null &&
+                              persona['fechaRegistro'] is Timestamp
+                          ? _formatDate(
+                              (persona['fechaRegistro'] as Timestamp).toDate())
+                          : 'No aplica',
+                      theme,
+                    ),
                     const SizedBox(height: 24),
                     SizedBox(
                       width: double.infinity,

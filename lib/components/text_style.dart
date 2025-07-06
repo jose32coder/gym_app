@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 class TextStyles {
   static TextStyle boldText(BuildContext context) {
     final theme = Theme.of(context);
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return TextStyle(
         fontSize: 16,

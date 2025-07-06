@@ -159,7 +159,7 @@ class MembershipViewmodel extends ChangeNotifier {
       throw Exception('El usuario no tiene código de gimnasio asignado');
     }
 
-    // 2. Buscar gimnasio con el código que coincide (puedes ajustar el substring según la lógica)
+    // Buscar gimnasio por código
     final gimnasioQuery = await _firestore
         .collection('gimnasios')
         .where('codigo', isEqualTo: codigoGimnasioUsuario.substring(0, 8))
@@ -173,9 +173,24 @@ class MembershipViewmodel extends ChangeNotifier {
 
     final gimnasioDoc = gimnasioQuery.docs.first;
     final gimnasioId = gimnasioDoc.id;
-    // Aquí actualizas el campo isActive en Firestore
+
+    // Buscar usuarios activos en la membresía de ese gimnasio
+    final usuariosActivosQuery = await _firestore
+        .collection('gimnasios')
+        .doc(gimnasioId)
+        .collection('membresias')
+        .doc(membershipId)
+        .collection('usuarios')
+        .where('estado', isEqualTo: 'activo')
+        .get();
+
+    if (usuariosActivosQuery.docs.isNotEmpty) {
+      throw ('No se puede desactivar esta membresía porque hay usuarios activos asignados a ella.');
+    }
+
+    // Cambiar el estatus de la membresía
     final newStatus = !currentStatus;
-    await FirebaseFirestore.instance
+    await _firestore
         .collection('gimnasios')
         .doc(gimnasioId)
         .collection('membresias')
@@ -230,6 +245,20 @@ class MembershipViewmodel extends ChangeNotifier {
       print('Error al obtener membresías: $e');
       yield [];
     }
+  }
+
+  Stream<List<MembershipModel>> obtenerUsuariosPorMembresia(
+      String gimnasioId, String membresiaId) {
+    return _firestore
+        .collection('gimnasios')
+        .doc(gimnasioId)
+        .collection('membresias')
+        .doc(membresiaId)
+        .collection('usuarios')
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => MembershipModel.fromFirestore(doc))
+            .toList());
   }
 
   // Future<List<MembershipModel>> obtenerMembresiasActivasPorUsuario(

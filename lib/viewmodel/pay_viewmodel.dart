@@ -9,6 +9,8 @@ class PayViewModel extends ChangeNotifier {
   String? gimnasioId;
   List<Map<String, dynamic>> _payments = [];
   List<Map<String, dynamic>> get payments => _payments;
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
 
   /// Obtiene el gimnasioId del usuario actual
   Future<void> cargarGimnasioId() async {
@@ -44,23 +46,24 @@ class PayViewModel extends ChangeNotifier {
   }
 
   /// Guarda un nuevo pago y actualiza datos del usuario
-  Future<void> registrarPago({
-    required String cedula,
-    required String nombre,
-    required String nombreMembresia,
-    required double monto,
-    double? montoBs,
-    double? montoDollar,
-    required DateTime fechaPago,
-  }) async {
+  Future<void> registrarPago(
+      {required String cedula,
+      required String nombre,
+      required String nombreMembresia,
+      required String membresiaId, // nuevo parámetro
+      required double monto,
+      required String observation,
+      String? reference,
+      double? montoBs,
+      double? montoDollar,
+      required DateTime fechaPago,
+      required DateTime? fechaCorte}) async {
     if (gimnasioId == null) {
       await cargarGimnasioId();
-      if (gimnasioId == null) {
-        return;
-      }
+      if (gimnasioId == null) return;
     }
 
-    // Buscar usuario en: gimnasios/{gimnasioId}/usuarios/
+    // Buscar usuario
     final usuariosQuery = await _firestore
         .collection('gimnasios')
         .doc(gimnasioId)
@@ -69,14 +72,12 @@ class PayViewModel extends ChangeNotifier {
         .limit(1)
         .get();
 
-    if (usuariosQuery.docs.isEmpty) {
-      return;
-    }
+    if (usuariosQuery.docs.isEmpty) return;
 
     final usuarioDoc = usuariosQuery.docs.first;
     final usuarioId = usuarioDoc.id;
 
-    // Registrar pago en: gimnasios/{gimnasioId}/pagos/
+    // Registrar pago
     await _firestore
         .collection('gimnasios')
         .doc(gimnasioId)
@@ -86,11 +87,15 @@ class PayViewModel extends ChangeNotifier {
       'nombre': nombre,
       'monto': monto,
       'montoBs': montoBs,
-      'montoDollar': montoDollar,
+      'montoDollares': montoDollar,
       'nombreMembresia': nombreMembresia,
+      'referencia': reference,
       'fechaPago': fechaPago,
+      'fechaCorte': fechaCorte,
+      'observacion': observation,
     });
-    // Actualizar datos del usuario en: gimnasios/{gimnasioId}/usuarios/{usuarioId}
+
+    // Actualizar datos del usuario
     await _firestore
         .collection('gimnasios')
         .doc(gimnasioId)
@@ -101,6 +106,21 @@ class PayViewModel extends ChangeNotifier {
       'habilitado': true,
       'fechaUltimoPago': fechaPago,
       'membresia': nombreMembresia,
+    });
+
+    // Registrar al usuario en la membresía
+    await _firestore
+        .collection('gimnasios')
+        .doc(gimnasioId)
+        .collection('membresias')
+        .doc(membresiaId)
+        .collection('usuarios')
+        .doc(cedula)
+        .set({
+      'cedula': cedula,
+      'nombre': nombre,
+      'estado': 'activo',
+      'fechaPago': fechaPago,
     });
   }
 
@@ -125,7 +145,8 @@ class PayViewModel extends ChangeNotifier {
           'nombreMembresia': data['nombreMembresia'] ?? '',
           'monto': data['monto'] ?? 0.0,
           'montoBs': data['montoBs'] ?? 0.0,
-          'montoDollar': data['montoDollar'] ?? 0.0,
+          'referencia': data['reference'] ?? 0.0,
+          'montoDollares': data['montoDollar'] ?? 0.0,
           'fechaPago': (data['fechaPago'] as Timestamp).toDate(),
         };
       }).toList();

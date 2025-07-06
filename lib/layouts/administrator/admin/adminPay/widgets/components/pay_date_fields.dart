@@ -38,8 +38,6 @@ class PayDateFields extends StatelessWidget {
         suffixIcon: const Icon(Icons.calendar_today),
       ),
       readOnly: true,
-      validator: (value) =>
-          value == null || value.isEmpty ? 'Campo obligatorio' : null,
     );
   }
 }

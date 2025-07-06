@@ -202,7 +202,7 @@ class _TextFormPageState extends State<TextFormPage> {
       tipoUsuario: _selectedRol,
       talla: '',
       peso: '',
-      membresia: '',
+      membresia: 'Sin membresía',
       pago: '',
       codeGym: _codeController.text.trim(),
     );

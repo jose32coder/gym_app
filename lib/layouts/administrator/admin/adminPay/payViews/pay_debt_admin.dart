@@ -2,8 +2,6 @@ import 'package:basic_flutter/components/notification_modal.dart';
 import 'package:basic_flutter/components/text_style.dart';
 import 'package:basic_flutter/layouts/administrator/admin/adminPay/payViews/widgets/member_card_state.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
-import 'dart:convert';
 
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -18,17 +16,11 @@ class _PayDebtAdminState extends State<PayDebtAdmin> {
   Future<List<dynamic>>? membresiasFuture;
   String? estadoSeleccionado;
 
-  Future<List<dynamic>> cargarMembresias() async {
-    String jsonString =
-        await rootBundle.loadString('assets/personas_data.json');
-    final jsonData = jsonDecode(jsonString);
-    return jsonData['membresias'];
-  }
+  
 
   @override
   void initState() {
     super.initState();
-    membresiasFuture = cargarMembresias();
   }
 
   @override

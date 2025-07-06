@@ -21,10 +21,10 @@ class PayRegister extends StatefulWidget {
   });
 
   @override
-  State<PayRegister> createState() => _PayRegisterState();
+  State<PayRegister> createState() => PayRegisterState();
 }
 
-class _PayRegisterState extends State<PayRegister> {
+class PayRegisterState extends State<PayRegister> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController cedController = TextEditingController();
   final TextEditingController nombreController = TextEditingController();
@@ -124,6 +124,14 @@ class _PayRegisterState extends State<PayRegister> {
     );
 
     Overlay.of(context).insert(_overlayEntry!);
+  }
+
+  String? validateCedula() {
+    final error = Validations.validateCed(cedController.text);
+    setState(() {
+      _cedError = error;
+    });
+    return error;
   }
 
   void _removeOverlay() {
@@ -260,6 +268,7 @@ class _PayRegisterState extends State<PayRegister> {
                     ),
                     fillColor: theme.colorScheme.onInverseSurface,
                     filled: true,
+                    errorText: _cedError,
                   ),
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   validator: Validations.validateCed,
@@ -273,6 +282,7 @@ class _PayRegisterState extends State<PayRegister> {
                 formKey: _formKey,
                 cedulaController: cedController,
                 nombreController: nombreController,
+                onValidateCedula: validateCedula,
               ),
             ],
           ),

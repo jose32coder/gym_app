@@ -1,7 +1,6 @@
 import 'package:basic_flutter/components/notification_modal.dart';
 import 'package:basic_flutter/components/text_style.dart';
-import 'package:basic_flutter/layouts/administrator/admin/adminReport/reportViews/report_income.dart';
-import 'package:basic_flutter/layouts/administrator/admin/adminReport/reportViews/report_membership.dart';
+import 'package:basic_flutter/layouts/administrator/admin/adminReport/reportViews/report_pays.dart';
 import 'package:basic_flutter/layouts/administrator/admin/adminReport/reportViews/report_totalperson.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -18,24 +17,25 @@ class _AdminReportState extends State<AdminReport> {
 
   final List<Widget> _pages = const [
     ReportTotalperson(),
-    ReportMembership(),
-    ReportIncome(),
+    ReportPays(),
+    // ReportIncome(),
   ];
 
   final List<String> _appBarTitles = [
     'Reporte de personas',
-    'Reporte de Membresías',
-    'Reporte de pagos historicos',
+    // 'Reporte de Membresías',
+    'Reporte de pagos',
   ];
 
   final List<String> _navBarLabels = [
     'Personas',
-    'Membresías',
-    'Ingresos',
+    'Pagos',
+    // 'Ingresos',
   ];
+
   final List<IconData> _icons = [
     Icons.people,
-    Icons.card_membership,
+    // Icons.card_membership,
     Icons.attach_money,
   ];
 
@@ -100,10 +100,10 @@ class _AdminReportState extends State<AdminReport> {
             icon: Icon(_icons[1]),
             label: _navBarLabels[1],
           ),
-          NavigationDestination(
-            icon: Icon(_icons[2]),
-            label: _navBarLabels[2],
-          ),
+          // NavigationDestination(
+          //   icon: Icon(_icons[2]),
+          //   label: _navBarLabels[2],
+          // ),
         ],
       ),
     );

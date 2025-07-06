@@ -18,6 +18,7 @@ class PromosForm extends StatefulWidget {
 class _PromosFormState extends State<PromosForm> {
   final TextEditingController promotionNameController = TextEditingController();
   double discountValue = 0;
+  bool isActive = true;
 
   final TextEditingController discount2Controller = TextEditingController();
   final TextEditingController discount3Controller = TextEditingController();
@@ -31,6 +32,7 @@ class _PromosFormState extends State<PromosForm> {
     discount2Controller.clear();
     discount3Controller.clear();
     discount4Controller.clear();
+    isActive = true;
     showGroupDiscounts = false;
     setState(() {});
   }
@@ -70,6 +72,7 @@ class _PromosFormState extends State<PromosForm> {
       name: nombre,
       discount: discountValue,
       groupDiscount: groupDiscounts,
+      isActive: isActive, // Nuevo campo añadido
     );
 
     try {
@@ -89,6 +92,20 @@ class _PromosFormState extends State<PromosForm> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error al guardar promoción: $e')),
       );
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.promotionEdit != null) {
+      final promo = widget.promotionEdit!;
+      promotionNameController.text = promo.name;
+      discountValue = promo.discount;
+      isActive = promo.isActive;
+      discount2Controller.text = promo.groupDiscount[2]?.toString() ?? '';
+      discount3Controller.text = promo.groupDiscount[3]?.toString() ?? '';
+      discount4Controller.text = promo.groupDiscount[4]?.toString() ?? '';
     }
   }
 
@@ -155,6 +172,24 @@ class _PromosFormState extends State<PromosForm> {
                   onChanged: (value) {
                     setState(() {
                       discountValue = value;
+                    });
+                  },
+                ),
+              ],
+            ),
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Estado de la promoción',
+                  style: theme.textTheme.titleMedium,
+                ),
+                Switch(
+                  value: isActive,
+                  onChanged: (value) {
+                    setState(() {
+                      isActive = value;
                     });
                   },
                 ),

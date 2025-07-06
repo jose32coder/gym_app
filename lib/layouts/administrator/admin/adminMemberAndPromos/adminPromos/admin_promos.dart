@@ -21,6 +21,8 @@ class _AdminPromosState extends State<AdminPromos> {
   final PromotionViewModel _viewmodel = PromotionViewModel();
 
   String? _filterType;
+  List<PromotionModel> _cachedPromotions = [];
+  bool _hasLoadedOnce = false;
   bool? _filterIsActive;
 
   String? uid;
@@ -56,6 +58,34 @@ class _AdminPromosState extends State<AdminPromos> {
         ),
       ),
     );
+  }
+
+  void _togglePromotionStatus(PromotionModel promo) async {
+    if (uid == null) return;
+
+    try {
+      await _viewmodel.actualizarEstadoPromocion(
+        usuarioId: uid!,
+        promocionId: promo.id,
+        nuevoEstado: !promo.isActive, // Cambia el estado actual
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            promo.isActive
+                ? 'Promoción desactivada correctamente'
+                : 'Promoción activada correctamente',
+          ),
+        ),
+      );
+
+      setState(() {}); // Refresca UI para mostrar el nuevo estado
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al actualizar promoción: $e')),
+      );
+    }
   }
 
   @override
@@ -110,19 +140,29 @@ class _AdminPromosState extends State<AdminPromos> {
                       child: StreamBuilder<List<PromotionModel>>(
                         stream: _viewmodel.obtenerPromocionesPorUsuario(uid!),
                         builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return const Center(
-                                child: CircularProgressIndicator());
-                          }
-
                           if (snapshot.hasError) {
                             return Center(
                                 child: Text('Error: ${snapshot.error}'));
                           }
 
-                          List<PromotionModel> promotions = snapshot.data ?? [];
+                          // Cuando el stream esté en espera y no tengas datos, muestra loading
+                          if (snapshot.connectionState ==
+                                  ConnectionState.waiting &&
+                              !_hasLoadedOnce) {
+                            return const Center(
+                                child: CircularProgressIndicator());
+                          }
 
+                          // Actualiza la caché si hay datos nuevos
+                          if (snapshot.hasData) {
+                            _cachedPromotions = snapshot.data!;
+                            _hasLoadedOnce = true;
+                          }
+
+                          // Usa la caché para mostrar la UI
+                          List<PromotionModel> promotions = _cachedPromotions;
+
+                          // Aplica el filtro de búsqueda
                           if (_searchTerm.isNotEmpty) {
                             promotions = promotions
                                 .where((promo) => promo.name
@@ -168,36 +208,78 @@ class _AdminPromosState extends State<AdminPromos> {
                             itemBuilder: (context, index) {
                               final p = promotions[index];
                               return Card(
-                                color: theme.colorScheme.surface,
-                                elevation: 2,
+                                color: theme.colorScheme.surfaceVariant,
                                 shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12)),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
                                 child: ListTile(
                                   contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 10),
+                                      horizontal: 16, vertical: 6),
                                   leading: Icon(
-                                    Icons.local_offer_rounded,
+                                    Icons.local_offer_outlined,
                                     color: theme.colorScheme.primary,
-                                    size: 36,
+                                    size: 32,
                                   ),
                                   title: Text(
                                     p.name,
-                                    style: theme.textTheme.titleMedium
-                                        ?.copyWith(fontWeight: FontWeight.w600),
+                                    style:
+                                        theme.textTheme.titleMedium?.copyWith(
+                                      color: theme.colorScheme.onSurface,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                  subtitle: Text(
-                                    '${p.discount.toStringAsFixed(0) ?? 0}% descuento individual',
-                                    style: theme.textTheme.bodyMedium,
+                                  subtitle: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        '${p.discount.toStringAsFixed(0)}% descuento individual',
+                                        style: theme.textTheme.bodyMedium
+                                            ?.copyWith(
+                                          color: theme
+                                              .colorScheme.onSurfaceVariant,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 5),
+                                      Text(
+                                        p.isActive
+                                            ? 'Activada'
+                                            : 'Deshabilitada',
+                                        style:
+                                            theme.textTheme.bodySmall?.copyWith(
+                                          color: p.isActive
+                                              ? Colors.green
+                                              : Colors.red,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  trailing: Wrap(
-                                    spacing: 8,
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
                                     children: [
                                       IconButton(
                                         icon: Icon(Icons.edit_outlined,
                                             color: theme.colorScheme.primary),
                                         tooltip: 'Editar',
+                                        onPressed: () {
+                                          _navigateToForm(promotionToEdit: p);
+                                        },
+                                      ),
+                                      IconButton(
+                                        icon: Icon(
+                                          p.isActive
+                                              ? Icons.block
+                                              : Icons.check_circle,
+                                          color: p.isActive
+                                              ? theme.colorScheme.error
+                                              : Colors.green,
+                                        ),
+                                        tooltip: p.isActive
+                                            ? 'Deshabilitar'
+                                            : 'Habilitar',
                                         onPressed: () =>
-                                            _navigateToForm(promotionToEdit: p),
+                                            _togglePromotionStatus(p),
                                       ),
                                     ],
                                   ),

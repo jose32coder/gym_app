@@ -6,7 +6,6 @@ import 'package:basic_flutter/layouts/administrator/home/widgets/bubble_client.d
 import 'package:basic_flutter/layouts/administrator/home/widgets/ingresos_chart.dart';
 import 'package:basic_flutter/layouts/administrator/home/widgets/resume_cards.dart';
 import 'package:basic_flutter/components/text_style.dart';
-import 'package:basic_flutter/layouts/administrator/home/widgets/welcome_message.dart';
 import 'package:basic_flutter/viewmodel/person_viewmodel.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -218,17 +217,14 @@ class _HomeState extends State<Home> {
                   const SizedBox(
                     height: 20,
                   ),
-                  SingleChildScrollView(
-                    padding: const EdgeInsets.only(top: 5, bottom: 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Últimos movimientos',
-                            style: TextStyles.boldText(context)),
-                        const SizedBox(height: 10),
-                        const ListaMovimientos(cantidadAMostrar: 5),
-                      ],
-                    ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Últimos movimientos',
+                          style: TextStyles.boldText(context)),
+                      const SizedBox(height: 10),
+                      ListaMovimientos(cantidadAMostrar: 5),
+                    ],
                   ),
                 ],
               ),

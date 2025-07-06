@@ -5,12 +5,14 @@ class PromotionModel {
   final String name;
   final double discount;
   final Map<int, double> groupDiscount;
+  final bool isActive;
 
   PromotionModel({
     this.id,
     required this.name,
     required this.discount,
     required this.groupDiscount,
+    this.isActive = true,
   });
 
   Map<String, dynamic> toMap() {
@@ -19,6 +21,7 @@ class PromotionModel {
       'discount': discount,
       'groupDiscount':
           groupDiscount.map((key, value) => MapEntry(key.toString(), value)),
+      'isActive': isActive,
     };
   }
 
@@ -68,6 +71,7 @@ class PromotionModel {
                   : 0.0
           : 0.0,
       groupDiscount: groupDiscount,
+      isActive: data['isActive'] is bool ? data['isActive'] : false,
     );
   }
 }

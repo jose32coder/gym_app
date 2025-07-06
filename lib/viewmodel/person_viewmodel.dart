@@ -63,13 +63,21 @@ class PersonasViewModel extends ChangeNotifier {
 
   List<Map<String, dynamic>> get ultimosClientes {
     final sorted = List<Map<String, dynamic>>.from(usuarios);
+
     sorted.sort((a, b) {
-      final fechaA =
-          DateTime.tryParse(a['fechaRegistro'] ?? '') ?? DateTime(2000);
-      final fechaB =
-          DateTime.tryParse(b['fechaRegistro'] ?? '') ?? DateTime(2000);
+      // Obtener fechaRegistro de a
+      final fechaA = a['fechaRegistro'] is Timestamp
+          ? (a['fechaRegistro'] as Timestamp).toDate()
+          : DateTime(2000);
+
+      // Obtener fechaRegistro de b
+      final fechaB = b['fechaRegistro'] is Timestamp
+          ? (b['fechaRegistro'] as Timestamp).toDate()
+          : DateTime(2000);
+
       return fechaB.compareTo(fechaA);
     });
+
     return sorted.take(8).toList();
   }
 
@@ -217,6 +225,7 @@ class PersonasViewModel extends ChangeNotifier {
         'codigoGimnasio': codeGym,
         'sexo': sexo,
         'tipo': tipo,
+        'fechaRegistro': FieldValue.serverTimestamp()
       });
 
       await secondaryAuth.signOut();
@@ -286,6 +295,7 @@ class PersonasViewModel extends ChangeNotifier {
         'estado': 'activo',
         'fechaUltimoPago':
             tipoUsuario == 'Cliente' ? FieldValue.serverTimestamp() : null,
+        'fechaRegistro': FieldValue.serverTimestamp()
       };
 
       await _firestore

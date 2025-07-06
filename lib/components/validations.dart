@@ -140,7 +140,7 @@ class Validations {
     final regex = RegExp(r'^(?:[VE]?)?\d{7,8}$');
 
     if (!regex.hasMatch(cleanValue)) {
-      return 'Cédula inválida. Ej: V12345678 o 12345678';
+      return 'Cédula inválida. Ej: 12345678';
     }
 
     return null;

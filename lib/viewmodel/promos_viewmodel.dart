@@ -69,17 +69,15 @@ class PromotionViewModel extends ChangeNotifier {
     return gimnasioQuery.docs.first.id;
   }
 
-  Stream<List<PromotionModel>> obtenerPromocionesPorUsuario(
-      String usuarioId) async* {
-    final gimnasioId = await obtenerGimnasioId(usuarioId);
-
+  Stream<List<PromotionModel>> obtenerPromocionesPorUsuario(String uid) async* {
+    final gimnasioId = await obtenerGimnasioId(uid);
     yield* _firestore
         .collection('gimnasios')
         .doc(gimnasioId)
         .collection('promociones')
         .snapshots()
         .map((snapshot) => snapshot.docs
-            .map((doc) => PromotionModel.fromMap(doc.data(), doc.id))
+            .map((doc) => PromotionModel.fromFirestore(doc))
             .toList());
   }
 
@@ -132,6 +130,30 @@ class PromotionViewModel extends ChangeNotifier {
     } catch (e) {
       print('Error al obtener membresías activas: $e');
       return [];
+    }
+  }
+
+  Future<void> actualizarEstadoPromocion({
+    required String usuarioId,
+    required String? promocionId,
+    required bool nuevoEstado,
+  }) async {
+    try {
+      final gimnasioId = await obtenerGimnasioId(usuarioId);
+      print(
+          'Actualizando promoción $promocionId en gimnasio $gimnasioId con isActive=$nuevoEstado');
+
+      await _firestore
+          .collection('gimnasios')
+          .doc(gimnasioId)
+          .collection('promociones')
+          .doc(promocionId)
+          .update({'isActive': nuevoEstado});
+
+      notifyListeners();
+    } catch (e) {
+      print('Error al actualizar estado de promoción: $e');
+      rethrow;
     }
   }
 }

@@ -1,5 +1,7 @@
 import 'package:basic_flutter/components/text_style.dart';
 import 'package:basic_flutter/components/validations.dart';
+import 'package:basic_flutter/layouts/administrator/admin/adminPay/payViews/pay_register.dart';
+import 'package:basic_flutter/layouts/administrator/admin/adminPay/payViews/widgets/comprobanteCard.dart';
 import 'package:basic_flutter/layouts/administrator/admin/adminPay/widgets/components/pay_currency.dart';
 import 'package:basic_flutter/models/model_membership.dart';
 import 'package:basic_flutter/models/model_promo.dart';
@@ -12,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'components/pay_amount_field.dart';
 import 'components/pay_date_fields.dart';
+import 'package:collection/collection.dart';
 
 class AdminPayForm extends StatefulWidget {
   final GlobalKey<FormState> formKey;
@@ -20,6 +23,7 @@ class AdminPayForm extends StatefulWidget {
   final TextEditingController? amountUsdController;
   final TextEditingController? amountBsController;
   final TextEditingController? paymentReferenceController;
+  final String? Function()? onValidateCedula;
 
   const AdminPayForm(
       {super.key,
@@ -28,7 +32,8 @@ class AdminPayForm extends StatefulWidget {
       required this.nombreController,
       this.amountBsController,
       this.amountUsdController,
-      this.paymentReferenceController});
+      this.paymentReferenceController,
+      this.onValidateCedula});
 
   @override
   State<AdminPayForm> createState() => _AdminPayFormState();
@@ -36,6 +41,10 @@ class AdminPayForm extends StatefulWidget {
 
 class _AdminPayFormState extends State<AdminPayForm> {
   // Estado
+  final GlobalKey<PayAmountFieldState> _payAmountFieldKey =
+      GlobalKey<PayAmountFieldState>();
+  final GlobalKey<PayRegisterState> _payRegisterKey =
+      GlobalKey<PayRegisterState>();
   List<MembershipModel> _membresiasActivas = [];
   List<PromotionModel> _promociones = [];
   bool isLoadingMembresias = true;
@@ -55,15 +64,21 @@ class _AdminPayFormState extends State<AdminPayForm> {
   String? _memberError;
   String? _cedError;
   String? _montoBsError;
+  bool _payAmountHasError = false;
+  DateTime? _fechaCorte;
 
   final TextEditingController _dateRangeController = TextEditingController();
   String _paymentCurrency = 'Dólares';
+  double? montoDolar;
 
   final TextEditingController _paymentReferenceController =
       TextEditingController();
   final TextEditingController _amountUsdController = TextEditingController();
   final TextEditingController _amountBsController = TextEditingController();
   final TextEditingController _amountTotalController = TextEditingController();
+  final TextEditingController _referenceAmountBsController =
+      TextEditingController();
+  final TextEditingController _observationsController = TextEditingController();
 
   Map<String, int> membershipDurations = {
     'Diario': 1,
@@ -83,6 +98,7 @@ class _AdminPayFormState extends State<AdminPayForm> {
     _dateRangeController.dispose();
     _amountUsdController.dispose();
     _amountBsController.dispose();
+    _referenceAmountBsController.dispose();
     _amountTotalController.dispose();
     super.dispose();
   }
@@ -144,9 +160,13 @@ class _AdminPayFormState extends State<AdminPayForm> {
       final DateTime ahora = DateTime.now();
       final DateTime fechaFin = ahora.add(Duration(days: dias));
 
+      // Guardamos fechaFin en _fechaCorte
+      _fechaCorte = fechaFin;
+
       _dateRangeController.text =
           '${ahora.day}/${ahora.month}/${ahora.year} - ${fechaFin.day}/${fechaFin.month}/${fechaFin.year}';
     } else {
+      _fechaCorte = null;
       _dateRangeController.clear();
     }
   }
@@ -192,65 +212,98 @@ class _AdminPayFormState extends State<AdminPayForm> {
   }
 
   void _newpay() async {
+    final cedulaError = widget.onValidateCedula?.call();
+    final isFormValid = widget.formKey.currentState?.validate() ?? false;
+
     setState(() {
       _cedError = Validations.validateCed(widget.cedulaController.text);
       _memberError = Validations.validateMembershipName(_membership);
     });
 
-    if (widget.formKey.currentState!.validate() && _cedError == null) {
-      setState(() {
-        isLoading = true;
-      });
+    if (!isFormValid || cedulaError != null || _payAmountHasError) {
+      if (cedulaError != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(cedulaError)),
+        );
+      }
+      return;
     }
 
-    if (widget.formKey.currentState!.validate()) {
-      final payVM = Provider.of<PayViewModel>(context, listen: false);
+    setState(() {
+      isLoading = true;
+    });
 
-      if (_membership.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Debe seleccionar una membresía')),
-        );
-        return;
-      }
+    final payVM = Provider.of<PayViewModel>(context, listen: false);
 
-      double? monto = double.tryParse(_amountTotalController.text);
-      if (monto == null || monto <= 0) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Monto inválido')),
-        );
-        return;
-      }
-
-      await payVM.registrarPago(
-        cedula: widget.cedulaController.text.trim(),
-        nombre: widget.nombreController.text.trim(),
-        nombreMembresia: membresiaSeleccionada?.name ?? '',
-        monto: double.tryParse(_amountTotalController.text.trim()) ?? 0.0,
-        fechaPago: DateTime.now(),
-        montoBs: double.tryParse(_amountBsController.text.trim()) ?? 0.0,
-        montoDollar: double.tryParse(_amountUsdController.text.trim()) ??
-            double.tryParse(_amountTotalController.text.trim()),
-      );
-
+    if (_membership.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Pago registrado correctamente')),
+        const SnackBar(content: Text('Debe seleccionar una membresía')),
       );
-
-      widget.formKey.currentState!.reset();
-      widget.cedulaController.clear();
-      widget.nombreController.clear();
-      _amountTotalController.clear();
-      setState(() {
-        membresiaSeleccionada?.name ?? '';
-      });
+      return;
     }
-  }
 
-  String? _validateAmount(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Este campo es obligatorio';
+    double? monto = double.tryParse(_amountTotalController.text);
+    if (monto == null || monto <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Monto inválido')),
+      );
+      return;
     }
-    return null;
+
+    if (_paymentCurrency == 'Dólares') {
+      montoDolar = monto;
+    } else {
+      montoDolar = double.tryParse(_amountUsdController.text.trim()) ?? 0.0;
+    }
+
+    await payVM.registrarPago(
+      cedula: widget.cedulaController.text.trim(),
+      nombre: widget.nombreController.text.trim(),
+      nombreMembresia: membresiaSeleccionada?.name ?? '',
+      membresiaId: membresiaSeleccionada?.id ?? '',
+      monto: monto,
+      fechaPago: DateTime.now(),
+      fechaCorte: _fechaCorte,
+      montoBs: double.tryParse(_amountBsController.text.trim()) ?? 0.0,
+      reference: _referenceAmountBsController.text.trim(),
+      montoDollar: montoDolar,
+      observation: _observationsController.text.trim(),
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Pago registrado correctamente')),
+    );
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ComprobanteCard(
+          nombre: widget.nombreController.text,
+          cedula: widget.cedulaController.text,
+          concepto:
+              'Comprobante de pago realizado por la persona ${widget.nombreController.text}',
+          membresia: membresiaSeleccionada?.name ?? 'Sin membresía',
+          tipoPago: _paymentCurrency ??
+              'Sin definir', // <-- este valor deberías tenerlo en tu formulario
+          montoDolares:
+              montoDolar, // <-- debe existir como double? en tu widget
+          montoBolivares:
+              double.tryParse(_amountBsController.text.trim()), // idem
+          montoTotal: monto, // <-- monto total calculado
+          fecha: DateTime.now().toString(),
+        ),
+      ),
+    );
+
+    widget.formKey.currentState!.reset();
+    widget.cedulaController.clear();
+    widget.nombreController.clear();
+    _amountTotalController.clear();
+
+    setState(() {
+      membresiaSeleccionada =
+          null; // Asumiendo que quieres limpiar la selección
+    });
   }
 
   @override
@@ -283,6 +336,12 @@ class _AdminPayFormState extends State<AdminPayForm> {
               onChanged: (value) {
                 setState(() {
                   _membership = value ?? '';
+
+                  // Aquí buscas el modelo completo según el nombre seleccionado
+                  membresiaSeleccionada = _membresiasActivas.firstWhereOrNull(
+                    (m) => m.name == value,
+                  );
+
                   _cedError = Validations.validateCed(value);
                   _actualizarRangoFecha(_membership);
                   _calcularMontoTotal();
@@ -412,18 +471,54 @@ class _AdminPayFormState extends State<AdminPayForm> {
                 });
               },
             ),
-            const SizedBox(height: 16),
+            const SizedBox(
+              height: 10,
+            ),
 
             // Campos de monto
             PayAmountField(
+              key: _payAmountFieldKey,
               paymentReferenceController: _paymentReferenceController,
               paymentCurrency: _paymentCurrency,
               amountUsdController: _amountUsdController,
               amountBsController: _amountBsController,
-              validateAmount: _validateAmount,
+              referenceAmountController: _referenceAmountBsController,
+              onValidationChanged: (hasError) {
+                setState(() {
+                  _payAmountHasError = hasError;
+                });
+              },
             ),
 
-            const SizedBox(height: 10),
+            const SizedBox(
+              height: 10,
+            ),
+
+            Text(
+              'Observaciones',
+              style: TextStyles.boldText(context),
+            ),
+            const SizedBox(
+              height: 5,
+            ),
+            TextFormField(
+              controller: _observationsController,
+              maxLines: 5, // Puedes ajustar esto según la altura que necesites
+              minLines: 1,
+              decoration: InputDecoration(
+                prefixIcon: Icon(Icons.notes),
+                hintText: 'Observaciones',
+                alignLabelWithHint:
+                    true, // Para que la etiqueta quede alineada arriba
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                fillColor: isDarkMode ? Colors.grey.shade800 : Colors.white,
+                filled: true,
+              ),
+            ),
+
+            const SizedBox(height: 20),
 
             // Botón de registrar pago
             SizedBox(

@@ -33,6 +33,7 @@ class PaymentCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final icon = getPaymentIcon(theme.colorScheme.primary);
 
     final nombre = (payment['nombre'] is String)
@@ -63,7 +64,7 @@ class PaymentCard extends StatelessWidget {
           leading: icon,
           title: Text(
             nombre,
-            style: TextStyles.boldPrimaryText(context),
+            style: TextStyles.boldText(context),
           ),
           subtitle: fecha != null
               ? Column(

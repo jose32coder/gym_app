@@ -64,13 +64,14 @@ class PaymentDetailsModal extends StatelessWidget {
         ? payment['nombre']
         : 'Sin nombre';
 
+    final referencia = (payment['referencia'] != null &&
+            payment['referencia'].toString().isNotEmpty)
+        ? payment['referencia'].toString()
+        : 'Sin referencia';
+
     final monto = (payment['monto'] is num) ? payment['monto'] as num : 0.0;
 
     final fechaPago = payment['fechaPago'];
-
-    final tipoPago = (payment['tipoPago'] as String?)?.isNotEmpty == true
-        ? payment['tipoPago']
-        : 'No especificado';
 
     final montoBolivares =
         (payment['montoBs'] is num) ? payment['montoBs'] as num : 0.0;
@@ -108,26 +109,9 @@ class PaymentDetailsModal extends StatelessWidget {
                   _buildDetailRow('Fecha de pago', _formatDate(fechaPago)),
                   _buildDetailRow(
                       'Bolivares', montoBolivares.toStringAsFixed(2)),
+                  _buildDetailRow('Referencia', referencia),
                   _buildDetailRow(
                       'Dolares (\$)', montoDolares.toStringAsFixed(2)),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Tipo de Pago: ',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 16),
-                      ),
-                      _getPaymentIcon(tipoPago, theme.primaryColor),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          tipoPago,
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                      ),
-                    ],
-                  ),
                   const SizedBox(height: 24),
                   SizedBox(
                     width: double.infinity,

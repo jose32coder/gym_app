@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:basic_flutter/components/search_bar.dart';
-import 'package:basic_flutter/layouts/administrator/admin/adminReport/widgets/person_details_modal.dart';
+import 'package:basic_flutter/layouts/administrator/admin/adminPay/payViews/widgets/payment_details_modal.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:excel/excel.dart';
 import 'package:pdf/pdf.dart';
@@ -10,28 +10,18 @@ import 'package:path_provider/path_provider.dart';
 import 'package:open_file/open_file.dart';
 import 'package:basic_flutter/components/text_style.dart';
 import 'package:basic_flutter/layouts/administrator/admin/adminReport/widgets/filter_report.dart';
-import 'package:basic_flutter/viewmodel/person_viewmodel.dart';
+import 'package:basic_flutter/viewmodel/pay_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class ReportTotalperson extends StatefulWidget {
-  const ReportTotalperson({super.key});
+class ReportPays extends StatefulWidget {
+  const ReportPays({super.key});
 
   @override
-  State<ReportTotalperson> createState() => _ReportTotalpersonState();
+  State<ReportPays> createState() => _ReportPaysState();
 }
 
-class _ReportTotalpersonState extends State<ReportTotalperson> {
-  List<String> membresias = [
-    'Diario',
-    'Semanal',
-    'Quincenal',
-    'Mensual',
-    'Trimestral',
-    'Semestral',
-    'Anual'
-  ];
-  String selectedMembresia = 'Todas';
+class _ReportPaysState extends State<ReportPays> {
   String _searchText = '';
   final TextEditingController controller = TextEditingController();
   DateTimeRange? _filtroFecha;
@@ -39,11 +29,9 @@ class _ReportTotalpersonState extends State<ReportTotalperson> {
   @override
   void initState() {
     super.initState();
-
-    // Cargar usuarios al iniciar
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final personasVM = Provider.of<PersonasViewModel>(context, listen: false);
-      personasVM.cargarUsuarios();
+      final payVM = Provider.of<PayViewModel>(context, listen: false);
+      payVM.fetchPayments();
     });
 
     controller.addListener(() {
@@ -54,61 +42,50 @@ class _ReportTotalpersonState extends State<ReportTotalperson> {
   }
 
   Future<void> generateAndOpenExcel() async {
-    final personasVM = Provider.of<PersonasViewModel>(context, listen: false);
-    final usuarios = personasVM.usuarios;
+    final payVM = Provider.of<PayViewModel>(context, listen: false);
+    final pagos = payVM.payments;
 
     final excel = Excel.createExcel();
-    final sheet = excel['ReporteUsuarios'];
+    final sheet = excel['ReportePagos'];
 
-    // Encabezados
     final headers = [
-      'Nombre',
+      'Cliente',
       'Cédula',
       'Membresía',
-      'Habilitado',
-      'Estatus',
-      'Tipo'
+      'Monto',
+      'Fecha',
+      'Estado'
     ];
     sheet.appendRow(headers);
 
-    // Filas de datos
-    for (var user in usuarios) {
-      final nombreCompleto =
-          '${user['nombre'] ?? ''} ${user['apellido'] ?? ''}';
-      final cedula = user['cedula'] ?? '';
-      final membresia = user['membresia'] ?? 'Sin membresía';
-      final habilitado = (user['habilitado'] ?? false) ? 'Sí' : 'No';
-      final estatus = user['estatus'] ?? 'Desconocido';
-      final tipo = user['tipo'] ?? 'No asignado';
+    for (var pago in pagos) {
+      final cliente = '${pago['nombre'] ?? ''} ${pago['apellido'] ?? ''}';
+      final cedula = pago['cedula'] ?? '';
+      final membresia = pago['membresia'] ?? 'Sin membresía';
+      final monto = pago['monto']?.toString() ?? '0';
+      final fecha = pago['fechaPago'] != null
+          ? (pago['fechaPago'] as Timestamp).toDate().toString()
+          : 'Sin fecha';
+      final estado = pago['estado'] ?? 'Desconocido';
 
-      final row = [
-        nombreCompleto,
-        cedula,
-        membresia,
-        habilitado,
-        estatus,
-        tipo
-      ];
-
+      final row = [cliente, cedula, membresia, monto, fecha, estado];
       sheet.appendRow(row);
     }
 
-    // Guardado en archivo temporal
     final output = await getTemporaryDirectory();
-    final filePath = '${output.path}/reporte_usuarios.xlsx';
+    final filePath = '${output.path}/reporte_pagos.xlsx';
     final fileBytes = excel.encode();
 
     if (fileBytes != null) {
       final file = File(filePath)
         ..createSync(recursive: true)
         ..writeAsBytesSync(fileBytes);
-
       await OpenFile.open(file.path);
     }
   }
 
   Future<void> generateAndOpenPDF(
-      List<Map<String, dynamic>> usuariosFiltrados) async {
+      List<Map<String, dynamic>> pagosFiltrados) async {
     final pdf = pw.Document();
 
     pdf.addPage(
@@ -118,7 +95,7 @@ class _ReportTotalpersonState extends State<ReportTotalperson> {
             crossAxisAlignment: pw.CrossAxisAlignment.center,
             children: [
               pw.Text(
-                'Reporte de Usuarios',
+                'Reporte de Pagos',
                 style:
                     pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold),
                 textAlign: pw.TextAlign.center,
@@ -126,21 +103,25 @@ class _ReportTotalpersonState extends State<ReportTotalperson> {
               pw.SizedBox(height: 20),
               pw.Table.fromTextArray(
                 headers: [
-                  'Nombre Completo',
+                  'Cliente',
                   'Cédula',
                   'Membresía',
-                  'Estatus',
-                  'Tipo'
+                  'Monto',
+                  'Fecha',
+                  'Estado'
                 ],
-                data: usuariosFiltrados.map((user) {
-                  final nombreCompleto =
-                      '${user['nombre'] ?? ''} ${user['apellido'] ?? ''}';
-                  final cedula = user['cedula'] ?? '';
-                  final membresia = user['membresia'] ?? 'Sin membresía';
-                  final estatus = user['estado'] ?? 'Desconocido';
-                  final tipo = user['tipo'] ?? 'No asignado';
+                data: pagosFiltrados.map((pago) {
+                  final cliente =
+                      '${pago['nombre'] ?? ''} ${pago['apellido'] ?? ''}';
+                  final cedula = pago['cedula'] ?? '';
+                  final membresia = pago['membresia'] ?? 'Sin membresía';
+                  final monto = pago['monto']?.toString() ?? '0';
+                  final fecha = pago['fechaPago'] != null
+                      ? (pago['fechaPago'] as Timestamp).toDate().toString()
+                      : 'Sin fecha';
+                  final estado = pago['estado'] ?? 'Desconocido';
 
-                  return [nombreCompleto, cedula, membresia, estatus, tipo];
+                  return [cliente, cedula, membresia, monto, fecha, estado];
                 }).toList(),
                 headerStyle:
                     pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 14),
@@ -152,11 +133,12 @@ class _ReportTotalpersonState extends State<ReportTotalperson> {
                 border:
                     pw.TableBorder.all(width: 0.5, color: PdfColors.grey500),
                 columnWidths: {
-                  0: const pw.FlexColumnWidth(4),
+                  0: const pw.FlexColumnWidth(3),
                   1: const pw.FlexColumnWidth(2),
-                  2: const pw.FlexColumnWidth(3),
-                  3: const pw.FlexColumnWidth(3), // Ajusta índice correcto aquí
+                  2: const pw.FlexColumnWidth(2),
+                  3: const pw.FlexColumnWidth(2),
                   4: const pw.FlexColumnWidth(3),
+                  5: const pw.FlexColumnWidth(2),
                 },
               ),
             ],
@@ -164,10 +146,10 @@ class _ReportTotalpersonState extends State<ReportTotalperson> {
         },
       ),
     );
-    final output = await getTemporaryDirectory();
-    final file = File('${output.path}/reporte_usuarios.pdf');
-    await file.writeAsBytes(await pdf.save());
 
+    final output = await getTemporaryDirectory();
+    final file = File('${output.path}/reporte_pagos.pdf');
+    await file.writeAsBytes(await pdf.save());
     await OpenFile.open(file.path);
   }
 
@@ -180,30 +162,25 @@ class _ReportTotalpersonState extends State<ReportTotalperson> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final personasVM = Provider.of<PersonasViewModel>(context);
+    final payVM = Provider.of<PayViewModel>(context);
 
-    // Filtrar personas según búsqueda
-    final filteredPersonas = personasVM.usuarios.where((p) {
-      final nombreApellido = '${p['nombre']} ${p['apellido']}'.toLowerCase();
+    final filteredPagos = payVM.payments.where((p) {
+      final cliente = '${p['nombre']} ${p['apellido']}'.toLowerCase();
       final coincideTexto = _searchText.isEmpty
           ? true
-          : nombreApellido.contains(_searchText.toLowerCase());
+          : cliente.contains(_searchText.toLowerCase());
 
       bool coincideFecha = true;
-      if (_filtroFecha != null && p['fechaRegistro'] != null) {
-        final timestamp = p['fechaRegistro'] as Timestamp;
-        final fechaRegistro = timestamp.toDate();
-        coincideFecha = fechaRegistro.isAfter(
+      if (_filtroFecha != null && p['fechaPago'] != null) {
+        final timestamp = p['fechaPago'] as Timestamp;
+        final fechaPago = timestamp.toDate();
+
+        coincideFecha = fechaPago.isAfter(
                 _filtroFecha!.start.subtract(const Duration(seconds: 1))) &&
-            fechaRegistro
+            fechaPago
                 .isBefore(_filtroFecha!.end.add(const Duration(seconds: 1)));
       }
-
-      bool coincideMembresia = selectedMembresia == 'Todas'
-          ? true
-          : (p['membresia'] ?? 'Sin membresía') == selectedMembresia;
-
-      return coincideTexto && coincideFecha && coincideMembresia;
+      return coincideTexto && coincideFecha;
     }).toList();
 
     return Scaffold(
@@ -213,27 +190,22 @@ class _ReportTotalpersonState extends State<ReportTotalperson> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Título y total
               Text(
-                'Personas totales: ${personasVM.usuarios.length}',
-                style:
-                    TextStyles.boldText(context).copyWith(fontSize: 18),
+                'Pagos totales: ${payVM.payments.length}',
+                style: TextStyles.boldText(context).copyWith(fontSize: 18),
               ),
-
               const SizedBox(height: 14),
-
-              // Filtros + exportación
               FilterReport(
                 onGeneratePDF: () async {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                        content: Text('Generando PDF de todos los usuarios')),
+                        content: Text('Generando PDF de todos los pagos')),
                   );
-                  await generateAndOpenPDF(filteredPersonas);
+                  await generateAndOpenPDF(filteredPagos);
                 },
                 onGenerateExcel: () async {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Generando Excel')),
+                    const SnackBar(content: Text('Generando Excel')),
                   );
                   await generateAndOpenExcel();
                 },
@@ -242,21 +214,11 @@ class _ReportTotalpersonState extends State<ReportTotalperson> {
                     _filtroFecha = dateRange;
                   });
                 },
-                membresias: membresias, // o tu lista dinámica
-                selectedMembresia: selectedMembresia,
-                onMembresiaChanged: (v) =>
-                    setState(() => selectedMembresia = v ?? 'Todas'),
               ),
-
               const SizedBox(height: 14),
-
-              // Barra de búsqueda
               SearchingBar(controller: controller, theme: theme),
-
               const SizedBox(height: 20),
-
-              // Estado de carga o lista
-              if (personasVM.isLoading)
+              if (payVM.isLoading)
                 Expanded(
                   child: Center(
                     child: CircularProgressIndicator(
@@ -264,10 +226,10 @@ class _ReportTotalpersonState extends State<ReportTotalperson> {
                     ),
                   ),
                 )
-              else if (filteredPersonas.isEmpty)
+              else if (filteredPagos.isEmpty)
                 Expanded(
                   child: Center(
-                    child: Text('No se encontraron personas',
+                    child: Text('No se encontraron pagos',
                         style: TextStyles.boldText(context)),
                   ),
                 )
@@ -275,10 +237,10 @@ class _ReportTotalpersonState extends State<ReportTotalperson> {
                 Expanded(
                   child: ListView.separated(
                     physics: const BouncingScrollPhysics(),
-                    itemCount: filteredPersonas.length,
+                    itemCount: filteredPagos.length,
                     separatorBuilder: (_, __) => const SizedBox(height: 12),
                     itemBuilder: (context, index) {
-                      final persona = filteredPersonas[index];
+                      final pago = filteredPagos[index];
                       return Card(
                         elevation: 3,
                         shape: RoundedRectangleBorder(
@@ -288,37 +250,58 @@ class _ReportTotalpersonState extends State<ReportTotalperson> {
                             theme.colorScheme.primary.withOpacity(0.15),
                         child: ListTile(
                           contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 6),
+                              horizontal: 20, vertical: 8),
                           leading: CircleAvatar(
                             backgroundColor:
-                                theme.colorScheme.primary.withOpacity(0.2),
-                            child: Icon(Icons.person,
-                                color: theme.colorScheme.primary),
-                          ),
-                          title: Text(
-                            '${persona['nombre']} ${persona['apellido']}',
-                            style: TextStyles.boldText(context)
-                                .copyWith(fontSize: 18),
-                          ),
-                          subtitle: Text(
-                            persona['cedula'] ?? '',
-                            style: TextStyle(
-                              color:
-                                  theme.colorScheme.onSurface.withOpacity(0.7),
-                              fontWeight: FontWeight.w400,
+                                theme.colorScheme.primary.withOpacity(0.15),
+                            child: Icon(
+                              Icons.attach_money,
+                              color: theme.colorScheme.primary,
                             ),
                           ),
+                          title: Text(
+                            '${pago['nombre'] ?? 'Sin nombre'}',
+                            style: TextStyles.boldText(context)
+                                .copyWith(fontSize: 17),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 4),
+                              Text(
+                                'Monto: ${pago['monto'] ?? 0} \$',
+                                style: TextStyle(
+                                  color: theme.colorScheme.onSurface
+                                      .withOpacity(0.75),
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              if (pago['nombreMembresia'] != null)
+                                Text(
+                                  'Membresía: ${pago['nombreMembresia']}',
+                                  style: TextStyle(
+                                    color: theme.colorScheme.onSurface
+                                        .withOpacity(0.6),
+                                    fontWeight: FontWeight.w400,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                            ],
+                          ),
+                          trailing: Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            size: 18,
+                            color: theme.colorScheme.primary.withOpacity(0.7),
+                          ),
                           onTap: () {
-                            final isDarkMode =
-                                Theme.of(context).brightness == Brightness.dark;
-
                             showDialog(
                               context: context,
                               barrierDismissible: false,
-                              builder: (context) => PersonDetailsModal(
-                                persona: persona, // el elemento del ListTile
+                              builder: (context) => PaymentDetailsModal(
+                                payment: pago,
                                 onClose: () => Navigator.of(context).pop(),
-                                isDarkMode: isDarkMode,
                               ),
                             );
                           },
