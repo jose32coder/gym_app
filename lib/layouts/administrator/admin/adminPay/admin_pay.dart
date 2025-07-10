@@ -4,22 +4,41 @@ import 'package:basic_flutter/layouts/administrator/admin/adminPay/payViews/pay_
 import 'package:flutter/material.dart';
 
 class AdminPay extends StatefulWidget {
-  const AdminPay({super.key});
+  final int initialIndex;
+  final String? cedula;
+  final String? nombre;
+
+  const AdminPay({
+    super.key,
+    this.initialIndex = 0,
+    this.cedula,
+    this.nombre,
+  });
 
   @override
   State<AdminPay> createState() => _AdminPayState();
 }
 
 class _AdminPayState extends State<AdminPay> {
-  int _currentIndex = 0;
+  late int _currentIndex;
+  late List<Widget> _screens;
 
-  final List<Widget> _screens = [
-    const PayRegister(
-      desdeAdmin: false,
-    ),
-    const PayDebtAdmin(),
-    const PayHistory(),
-  ];
+  @override
+  void initState() {
+    super.initState();
+
+    _currentIndex = widget.initialIndex;
+
+    _screens = [
+      PayRegister(
+        desdeAdmin: false,
+        cedula: widget.cedula,
+        nombre: widget.nombre,
+      ),
+      const PayDebtAdmin(),
+      const PayHistory(),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -52,12 +52,14 @@ class _PayHistoryState extends State<PayHistory> {
     showDialog(
       context: context,
       barrierDismissible: true,
-      builder: (_) => PaymentDetailsModal(
-        payment: payment,
-        onClose: () {
-          Navigator.of(context).pop(); // cerrar el diálogo
-        },
-      ),
+      builder: (context) {
+        return PaymentDetailsModal(
+          payment: payment,
+          onClose: () {
+            Navigator.of(context).pop(); // cerrar el diálogo
+          },
+        );
+      },
     );
   }
 

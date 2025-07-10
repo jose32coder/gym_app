@@ -1,3 +1,4 @@
+import 'package:basic_flutter/layouts/administrator/admin/adminPay/payViews/widgets/comprobanteCard.dart';
 import 'package:flutter/material.dart';
 
 class PaymentDetailsModal extends StatelessWidget {
@@ -12,9 +13,9 @@ class PaymentDetailsModal extends StatelessWidget {
 
   Icon _getPaymentIcon(String? tipoPago, Color color) {
     switch (tipoPago) {
-      case 'Bolívares (Bs)':
+      case 'Bolívares':
         return Icon(Icons.monetization_on, color: color);
-      case 'Dólares (\$)':
+      case 'Dólares':
         return Icon(Icons.attach_money, color: color);
       case 'Ambos':
         return Icon(Icons.account_balance_wallet, color: color);
@@ -63,13 +64,20 @@ class PaymentDetailsModal extends StatelessWidget {
     final nombre = (payment['nombre'] as String?)?.isNotEmpty == true
         ? payment['nombre']
         : 'Sin nombre';
-
+    final cedula = (payment['cedula'] as String?)?.isNotEmpty == true
+        ? payment['cedula']
+        : 'Sin cédula';
     final referencia = (payment['referencia'] != null &&
             payment['referencia'].toString().isNotEmpty)
         ? payment['referencia'].toString()
         : 'Sin referencia';
-
+    final nombreMembresia =
+        (payment['nombreMembresia'] as String?)?.isNotEmpty == true
+            ? payment['nombreMembresia']
+            : 'Sin nombre';
     final monto = (payment['monto'] is num) ? payment['monto'] as num : 0.0;
+
+    final tipoPago = payment['tipoPago'];
 
     final fechaPago = payment['fechaPago'];
 
@@ -77,12 +85,13 @@ class PaymentDetailsModal extends StatelessWidget {
         (payment['montoBs'] is num) ? payment['montoBs'] as num : 0.0;
 
     final montoDolares =
-        (payment['montoDollar'] is num) ? payment['montoDollar'] as num : 0.0;
+        (payment['montoDollares'] is num)
+        ? payment['montoDollares'] as num
+        : 0.0;
 
     return GestureDetector(
       onTap: onClose,
       child: Container(
-        color: Colors.black45,
         alignment: Alignment.center,
         child: GestureDetector(
           onTap: () {}, // evitar cerrar al tocar dentro
@@ -104,21 +113,68 @@ class PaymentDetailsModal extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 20),
+                  _buildDetailRow('Cédula', cedula),
                   _buildDetailRow('Nombre', nombre),
                   _buildDetailRow('Monto', '\$${monto.toStringAsFixed(2)}'),
-                  _buildDetailRow('Fecha de pago', _formatDate(fechaPago)),
                   _buildDetailRow(
-                      'Bolivares', montoBolivares.toStringAsFixed(2)),
+                      'Dólares (\$)', montoDolares.toStringAsFixed(2)),
+                  _buildDetailRow(
+                      'Bolivares (Bs)', montoBolivares.toStringAsFixed(2)),
                   _buildDetailRow('Referencia', referencia),
-                  _buildDetailRow(
-                      'Dolares (\$)', montoDolares.toStringAsFixed(2)),
-                  const SizedBox(height: 24),
+                  _buildDetailRow('Fecha de pago', _formatDate(fechaPago)),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        onClose(); // Cierra el modal actual primero
+                        showDialog(
+                          context: context,
+                          builder: (context) {
+                            return ComprobanteCard(
+                              nombre: nombre,
+                              cedula: cedula,
+                              concepto:
+                                  'Comprobante de pago realizado por $nombre',
+                              membresia: nombreMembresia ?? 'Sin membresía',
+                              montoDolares: montoDolares.toDouble(),
+                              montoBolivares: montoBolivares.toDouble(),
+                              montoTotal: monto.toDouble(),
+                              tipoPago: tipoPago.toString(),
+                              fecha: fechaPago.toString(),
+                            );
+                          },
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: theme.colorScheme.primary,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      icon: Icon(
+                        Icons.print,
+                        color: isDarkMode
+                            ? theme.colorScheme.onSurface
+                            : theme.colorScheme.onInverseSurface,
+                      ),
+                      label: Text(
+                        'Comprobante',
+                        style: TextStyle(
+                          color: isDarkMode
+                              ? theme.colorScheme.onSurface
+                              : theme.colorScheme.onInverseSurface,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: onClose,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: theme.colorScheme.primary,
+                        backgroundColor: theme.colorScheme.error,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),

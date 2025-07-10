@@ -1,43 +1,34 @@
+import 'package:basic_flutter/layouts/administrator/admin/adminPay/payViews/widgets/payment_card.dart';
+import 'package:basic_flutter/layouts/administrator/admin/adminPay/payViews/widgets/payment_details_modal.dart';
 import 'package:flutter/material.dart';
-import 'package:basic_flutter/data/movimientos_data.dart';
 
-class ListaMovimientos extends StatelessWidget {
-  final int cantidadAMostrar;
+class HistoryOperations extends StatelessWidget {
+  final List<Map<String, dynamic>> payments;
 
-  const ListaMovimientos({super.key, required this.cantidadAMostrar});
+  const HistoryOperations({super.key, required this.payments});
 
   @override
   Widget build(BuildContext context) {
-    final List<Map<String, String>> movimientosFiltrados =
-        movimientos.take(cantidadAMostrar).toList();
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final lastFivePayments =
+        payments.length > 5 ? payments.sublist(payments.length - 5) : payments;
 
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: movimientosFiltrados.length,
+      itemCount: lastFivePayments.length,
       itemBuilder: (context, index) {
-        final movimiento = movimientosFiltrados[index];
-        return Card(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-            side: BorderSide(
-              width: 2,
-              color: isDarkMode ? Colors.white : Colors.black87
-            )),
-          margin: const EdgeInsets.symmetric(vertical: 5),
-          child: ListTile(
-            leading: const Icon(Icons.attach_money, color: Colors.blue),
-            title: Text(movimiento['titulo']!),
-            subtitle: Text(movimiento['fecha']!),
-            trailing: Text(
-              movimiento['monto']!,
-              style: const TextStyle(
-                color: Colors.green,
-                fontWeight: FontWeight.bold,
+        final payment = lastFivePayments[index];
+        return PaymentCard(
+          payment: payment,
+          onTap: () {
+            showDialog(
+              context: context,
+              builder: (_) => PaymentDetailsModal(
+                payment: payment,
+                onClose: () => Navigator.of(context).pop(),
               ),
-            ),
-          ),
+            );
+          },
         );
       },
     );

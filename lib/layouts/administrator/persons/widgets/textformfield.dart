@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:basic_flutter/components/text_style.dart';
 import 'package:basic_flutter/components/validations.dart';
+import 'package:basic_flutter/layouts/administrator/admin/adminPay/admin_pay.dart';
 import 'package:basic_flutter/layouts/administrator/admin/adminPay/payViews/pay_register.dart';
 import 'package:basic_flutter/viewmodel/person_viewmodel.dart';
 import 'package:basic_flutter/viewmodel/user_viewmodel.dart';
@@ -209,6 +210,9 @@ class _TextFormPageState extends State<TextFormPage> {
   }
 
   void _actionClient() async {
+    final theme = Theme.of(context);
+    bool isDarkMode = theme.brightness == Brightness.dark;
+
     setState(() {
       _cedError = Validations.validateCed(_cedController.text);
       _nameError = Validations.validateName(_nameController.text);
@@ -231,42 +235,79 @@ class _TextFormPageState extends State<TextFormPage> {
         isLoading = true;
       });
 
-      final bool? pagarAhora = await showDialog<bool>(
+      // Mostrar diálogo y esperar acción
+      final String? accion = await showDialog<String>(
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('¿Deseas pagar la membresía ahora?'),
           actions: [
-            TextButton(
-              onPressed: () async {
-                _registerClient();
-                Navigator.of(context).pop(false);
-              },
-              child: const Text('Solo registrar'),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Pagar ahora'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: TextButton(
+                    onPressed: () =>
+                        Navigator.of(context).pop('solo_registrar'),
+                    style: TextButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        side: BorderSide(
+                          width: 2,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                    ),
+                    child: Text(
+                      'Solo registrar',
+                      style: TextStyle(color: theme.colorScheme.onSurface),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop('pagar'),
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 50),
+                      backgroundColor: theme.colorScheme.primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: Text(
+                      'Pagar ahora',
+                      style: TextStyle(
+                        color: isDarkMode
+                            ? theme.colorScheme.onSurface
+                            : theme.colorScheme.onInverseSurface,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
       );
 
-      if (pagarAhora != null) {
-        if (pagarAhora) {
-          // Navegar a Membership con pagoInmediato = true
-          Navigator.push(
+      // Si el usuario seleccionó una acción
+      if (accion != null) {
+        _registerClient();
+
+        if (!mounted) return;
+
+        if (accion == 'pagar') {
+          Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (_) => const PayRegister(
-                desdeAdmin: false,
-                cedula: '12345678',
-                nombre: 'Jose Perez',
-              ),
+              builder: (_) => AdminPay(
+                  initialIndex: 0,
+                  cedula: _cedController.text,
+                  nombre: _nameController.text), // o 1, o 2 según la pestaña
             ),
           );
         } else {
-          // Solo registro sin pago
-          if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Persona registrada sin membresía')),
           );

@@ -53,6 +53,7 @@ class PayViewModel extends ChangeNotifier {
       required String membresiaId, // nuevo parámetro
       required double monto,
       required String observation,
+      required String tipoPago,
       String? reference,
       double? montoBs,
       double? montoDollar,
@@ -86,6 +87,7 @@ class PayViewModel extends ChangeNotifier {
       'cedula': cedula,
       'nombre': nombre,
       'monto': monto,
+      'tipoPago': tipoPago,
       'montoBs': montoBs,
       'montoDollares': montoDollar,
       'nombreMembresia': nombreMembresia,
@@ -139,14 +141,17 @@ class PayViewModel extends ChangeNotifier {
 
       _payments = querySnapshot.docs.map((doc) {
         final data = doc.data();
+        print(data);
+
         return {
           'cedula': data['cedula'] ?? '',
           'nombre': data['nombre'] ?? '',
           'nombreMembresia': data['nombreMembresia'] ?? '',
           'monto': data['monto'] ?? 0.0,
+          'tipoPago': data['tipoPago'] ?? '',
           'montoBs': data['montoBs'] ?? 0.0,
-          'referencia': data['reference'] ?? 0.0,
-          'montoDollares': data['montoDollar'] ?? 0.0,
+          'referencia': data['referencia'] ?? '', // <- string por defecto
+          'montoDollares': data['montoDollares'] ?? 0.0, // <- num por defecto
           'fechaPago': (data['fechaPago'] as Timestamp).toDate(),
         };
       }).toList();

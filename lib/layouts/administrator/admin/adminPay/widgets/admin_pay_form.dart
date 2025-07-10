@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:basic_flutter/components/text_style.dart';
 import 'package:basic_flutter/components/validations.dart';
 import 'package:basic_flutter/layouts/administrator/admin/adminPay/payViews/pay_register.dart';
@@ -262,6 +264,7 @@ class _AdminPayFormState extends State<AdminPayForm> {
       nombreMembresia: membresiaSeleccionada?.name ?? '',
       membresiaId: membresiaSeleccionada?.id ?? '',
       monto: monto,
+      tipoPago: _paymentCurrency,
       fechaPago: DateTime.now(),
       fechaCorte: _fechaCorte,
       montoBs: double.tryParse(_amountBsController.text.trim()) ?? 0.0,
@@ -274,35 +277,38 @@ class _AdminPayFormState extends State<AdminPayForm> {
       const SnackBar(content: Text('Pago registrado correctamente')),
     );
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ComprobanteCard(
+    showDialog(
+      context: context,
+      builder: (context) {
+        return ComprobanteCard(
           nombre: widget.nombreController.text,
           cedula: widget.cedulaController.text,
           concepto:
               'Comprobante de pago realizado por la persona ${widget.nombreController.text}',
           membresia: membresiaSeleccionada?.name ?? 'Sin membresía',
-          tipoPago: _paymentCurrency ??
-              'Sin definir', // <-- este valor deberías tenerlo en tu formulario
-          montoDolares:
-              montoDolar, // <-- debe existir como double? en tu widget
-          montoBolivares:
-              double.tryParse(_amountBsController.text.trim()), // idem
-          montoTotal: monto, // <-- monto total calculado
+          tipoPago: _paymentCurrency ?? 'Sin definir',
+          montoDolares: montoDolar,
+          montoBolivares: double.tryParse(_amountBsController.text.trim()),
+          montoTotal: monto,
           fecha: DateTime.now().toString(),
-        ),
-      ),
+        );
+      },
     );
+  }
 
+  void _reset() {
     widget.formKey.currentState!.reset();
     widget.cedulaController.clear();
     widget.nombreController.clear();
     _amountTotalController.clear();
+    _amountBsController.clear();
+    _referenceAmountBsController.clear();
+    _observationsController.clear();
+    _dateRangeController.clear();
 
     setState(() {
-      membresiaSeleccionada =
-          null; // Asumiendo que quieres limpiar la selección
+      _membership = '';
+      membresiaSeleccionada = null;
     });
   }
 
@@ -326,22 +332,25 @@ class _AdminPayFormState extends State<AdminPayForm> {
             DropdownButtonFormField<String>(
               focusNode: _memberFocusNode,
               value: _membership.isNotEmpty ? _membership : null,
-              items: _membresiasActivas.map((membresia) {
-                return DropdownMenuItem(
-                  value: membresia.name,
-                  child: Text(
-                      '${membresia.name} — \$${membresia.price?.toStringAsFixed(2) ?? 'N/A'}'),
-                );
-              }).toList(),
+              items: [
+                const DropdownMenuItem<String>(
+                  value: null,
+                  child: Text('Selecciona una membresía'),
+                ),
+                ..._membresiasActivas.map((membresia) {
+                  return DropdownMenuItem<String>(
+                    value: membresia.name,
+                    child: Text(
+                        '${membresia.name} — \$${membresia.price?.toStringAsFixed(2) ?? 'N/A'}'),
+                  );
+                }).toList(),
+              ],
               onChanged: (value) {
                 setState(() {
-                  _membership = value ?? '';
-
-                  // Aquí buscas el modelo completo según el nombre seleccionado
+                  _membership = value ?? ''; // Si es null, asigna ''
                   membresiaSeleccionada = _membresiasActivas.firstWhereOrNull(
                     (m) => m.name == value,
                   );
-
                   _cedError = Validations.validateCed(value);
                   _actualizarRangoFecha(_membership);
                   _calcularMontoTotal();
@@ -354,7 +363,12 @@ class _AdminPayFormState extends State<AdminPayForm> {
                 ),
               ),
               autovalidateMode: AutovalidateMode.onUserInteraction,
-              validator: Validations.validateMembershipName,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Selecciona una membresía';
+                }
+                return null;
+              },
             ),
             const SizedBox(
               height: 10,
@@ -478,11 +492,10 @@ class _AdminPayFormState extends State<AdminPayForm> {
             // Campos de monto
             PayAmountField(
               key: _payAmountFieldKey,
-              paymentReferenceController: _paymentReferenceController,
               paymentCurrency: _paymentCurrency,
               amountUsdController: _amountUsdController,
               amountBsController: _amountBsController,
-              referenceAmountController: _referenceAmountBsController,
+              referenceAmountBsController: _referenceAmountBsController,
               onValidationChanged: (hasError) {
                 setState(() {
                   _payAmountHasError = hasError;
@@ -521,34 +534,66 @@ class _AdminPayFormState extends State<AdminPayForm> {
             const SizedBox(height: 20),
 
             // Botón de registrar pago
-            SizedBox(
-              width: double.infinity,
-              height: 55,
-              child: ElevatedButton.icon(
-                onPressed: _newpay,
-                icon: Icon(
-                  Icons.login,
-                  color: isDarkMode
-                      ? theme.colorScheme.onSurface
-                      : theme.colorScheme.onInverseSurface,
-                ),
-                label: Text(
-                  'Registrar pago',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: isDarkMode
-                        ? theme.colorScheme.onSurface
-                        : theme.colorScheme.onInverseSurface,
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: _newpay,
+                    icon: Icon(
+                      Icons.login,
+                      color: isDarkMode
+                          ? theme.colorScheme.onSurface
+                          : theme.colorScheme.onInverseSurface,
+                    ),
+                    label: Text(
+                      'Pagar',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: isDarkMode
+                            ? theme.colorScheme.onSurface
+                            : theme.colorScheme.onInverseSurface,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 50),
+                      backgroundColor: theme.colorScheme.primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
                   ),
                 ),
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 50),
-                  backgroundColor: Colors.blue.shade400,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                SizedBox(
+                  width: 12,
+                ),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: _reset,
+                    icon: Icon(
+                      Icons.close,
+                      color: isDarkMode
+                          ? theme.colorScheme.onSurface
+                          : theme.colorScheme.onInverseSurface,
+                    ),
+                    label: Text(
+                      'Resetear',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: isDarkMode
+                            ? theme.colorScheme.onSurface
+                            : theme.colorScheme.onInverseSurface,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 50),
+                      backgroundColor: theme.colorScheme.error,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
             const SizedBox(height: 30),
           ],

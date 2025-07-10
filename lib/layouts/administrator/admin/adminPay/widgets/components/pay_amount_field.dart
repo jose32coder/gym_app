@@ -5,8 +5,7 @@ class PayAmountField extends StatefulWidget {
   final String paymentCurrency;
   final TextEditingController amountUsdController;
   final TextEditingController amountBsController;
-  final TextEditingController referenceAmountController;
-  final TextEditingController paymentReferenceController;
+  final TextEditingController referenceAmountBsController;
   final void Function(bool hasError)? onValidationChanged;
 
   const PayAmountField({
@@ -14,9 +13,8 @@ class PayAmountField extends StatefulWidget {
     required this.paymentCurrency,
     required this.amountUsdController,
     required this.amountBsController,
-    required this.paymentReferenceController,
     this.onValidationChanged,
-    required this.referenceAmountController,
+    required this.referenceAmountBsController,
   });
 
   @override
@@ -73,7 +71,7 @@ class PayAmountFieldState extends State<PayAmountField> {
       if (!_focusReference.hasFocus) {
         setState(() {
           _referenceError = Validations.validateReferencia(
-              widget.paymentReferenceController.text);
+              widget.referenceAmountBsController.text);
         });
       }
     });
@@ -106,7 +104,7 @@ class PayAmountFieldState extends State<PayAmountField> {
       _amountBsError =
           Validations.validateAmountBsAndDollar(widget.amountBsController.text);
       _referenceError = Validations.validateReferencia(
-          widget.paymentReferenceController.text);
+          widget.referenceAmountBsController.text);
     });
 
     bool hasError = (_amountUsdError != null) ||
@@ -156,7 +154,7 @@ class PayAmountFieldState extends State<PayAmountField> {
           ),
           const SizedBox(height: 10), // Separación entre campos
           TextFormField(
-            controller: widget.paymentReferenceController,
+            controller: widget.referenceAmountBsController,
             focusNode: _focusReference,
             decoration: InputDecoration(
               hintText: 'Referencia de pago',
@@ -245,7 +243,7 @@ class PayAmountFieldState extends State<PayAmountField> {
           ),
           const SizedBox(height: 10),
           TextFormField(
-            controller: widget.paymentReferenceController,
+            controller: widget.referenceAmountBsController,
             focusNode: _focusReference,
             decoration: InputDecoration(
               hintText: 'Referencia de pago',
