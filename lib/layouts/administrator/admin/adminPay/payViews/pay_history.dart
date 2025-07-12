@@ -92,19 +92,43 @@ class _PayHistoryState extends State<PayHistory> {
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 10),
-            child: IconButton(
-              icon: const FaIcon(FontAwesomeIcons.bell),
-              onPressed: () {
-                showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  shape: const RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.vertical(top: Radius.circular(20)),
-                  ),
-                  builder: (context) => const NotificationModal(),
-                );
-              },
+            child: Row(
+              children: [
+                IconButton(
+                  icon: const FaIcon(FontAwesomeIcons.rotateRight),
+                  onPressed: () async {
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (_) =>
+                          const Center(child: CircularProgressIndicator()),
+                    );
+
+                    await context.read<PayViewModel>().cargarGimnasioId();
+                    _filterPayments();
+
+                    Navigator.of(context).pop(); // Cierra el diálogo de carga
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Pagos actualizados')),
+                    );
+                  },
+                ),
+                IconButton(
+                  icon: const FaIcon(FontAwesomeIcons.bell),
+                  onPressed: () {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.vertical(top: Radius.circular(20)),
+                      ),
+                      builder: (context) => const NotificationModal(),
+                    );
+                  },
+                ),
+              ],
             ),
           )
         ],

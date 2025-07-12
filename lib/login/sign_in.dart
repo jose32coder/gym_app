@@ -2,6 +2,8 @@ import 'package:basic_flutter/components/validations.dart';
 import 'package:basic_flutter/login/sign_up.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SignIn extends StatefulWidget {
   const SignIn({super.key});
@@ -74,12 +76,28 @@ class _SignInState extends State<SignIn> {
       });
 
       try {
-        await Future.delayed(const Duration(seconds: 1));
-
-        await FirebaseAuth.instance.signInWithEmailAndPassword(
+        // Inicia sesión
+        UserCredential userCredential =
+            await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
+
+        User? user = userCredential.user;
+        if (user != null) {
+          // Obtiene el token FCM
+          String? token = await FirebaseMessaging.instance.getToken();
+
+          if (token != null) {
+            // Guarda el token en Firestore
+            await FirebaseFirestore.instance
+                .collection('usuarios')
+                .doc(user.uid)
+                .update({'token': token});
+          }
+        }
+
+        // Aquí puedes redireccionar o continuar con la app tras login exitoso
       } on FirebaseAuthException catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -95,6 +113,7 @@ class _SignInState extends State<SignIn> {
       }
     }
   }
+
 
   InputDecoration buildInputDecoration({
     required String hintText,

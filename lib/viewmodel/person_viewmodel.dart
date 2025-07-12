@@ -1,13 +1,14 @@
-import 'package:basic_flutter/services/gimnasio_services.dart';
+// import 'package:basic_flutter/services/gimnasio_services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
 class PersonasViewModel extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final _gimnasioService = GimnasioService();
+  // final _gimnasioService = GimnasioService();
 
   List<Map<String, dynamic>> _usuarios = [];
   List<Map<String, dynamic>> get usuarios => _usuarios;
@@ -280,6 +281,12 @@ class PersonasViewModel extends ChangeNotifier {
       final apellido = userData['apellido'] ?? 'Sin apellido';
       final cedula = userData['cedula'] ?? 'Sin cédula';
 
+      // Obtén token solo si es Administrador
+      String? fcmToken;
+      if (tipoUsuario == 'Administrador') {
+        fcmToken = await FirebaseMessaging.instance.getToken();
+      }
+
       final asociacionData = {
         'uid': usuarioId,
         'nombre': nombre,
@@ -292,12 +299,15 @@ class PersonasViewModel extends ChangeNotifier {
         'membresia': tipoUsuario == 'Cliente' ? membresia : '',
         'pago': tipoUsuario == 'Cliente' ? pago : '',
         'habilitado': true,
-        'estado': 'activo',
+        'estado': 'pendiente',
         'fechaUltimoPago':
             tipoUsuario == 'Cliente' ? FieldValue.serverTimestamp() : null,
-        'fechaRegistro': FieldValue.serverTimestamp()
+        'fechaRegistro': FieldValue.serverTimestamp(),
+        // Solo guarda token si aplica
+        if (fcmToken != null) 'token': fcmToken,
       };
 
+      // Guarda en gimnasio/usuarios
       await _firestore
           .collection('gimnasios')
           .doc(gimnasioId)
@@ -305,6 +315,7 @@ class PersonasViewModel extends ChangeNotifier {
           .doc(usuarioId)
           .set(asociacionData);
 
+      // También guarda referencia en usuarios/gimnasios
       await _firestore
           .collection('usuarios')
           .doc(usuarioId)

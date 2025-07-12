@@ -6,6 +6,8 @@ class PromotionModel {
   final double discount;
   final Map<int, double> groupDiscount;
   final bool isActive;
+  final DateTime? createdAt;
+  final DateTime? expiresAt;
 
   PromotionModel({
     this.id,
@@ -13,6 +15,8 @@ class PromotionModel {
     required this.discount,
     required this.groupDiscount,
     this.isActive = true,
+    this.createdAt,
+    this.expiresAt,
   });
 
   Map<String, dynamic> toMap() {
@@ -22,10 +26,11 @@ class PromotionModel {
       'groupDiscount':
           groupDiscount.map((key, value) => MapEntry(key.toString(), value)),
       'isActive': isActive,
+      'createdAt': createdAt != null ? Timestamp.fromDate(createdAt!) : null,
+      'expiresAt': expiresAt != null ? Timestamp.fromDate(expiresAt!) : null,
     };
   }
 
-  // Factory para crear desde un Map
   factory PromotionModel.fromMap(Map<String, dynamic> map, String docId) {
     final rawGroupDiscount =
         map['groupDiscount'] as Map<String, dynamic>? ?? {};
@@ -34,6 +39,23 @@ class PromotionModel {
       final doubleValue = (value is num) ? value.toDouble() : 0.0;
       return MapEntry(intKey, doubleValue);
     });
+
+    DateTime? createdAt = map['createdAt'] != null
+        ? (map['createdAt'] as Timestamp).toDate()
+        : null;
+
+    DateTime? expiresAt = map['expiresAt'] != null
+        ? (map['expiresAt'] as Timestamp).toDate()
+        : null;
+
+    // Lógica para calcular si está activa según fecha de expiración
+    final now = DateTime.now();
+    bool isActive = true;
+    if (expiresAt != null) {
+      isActive = now.isBefore(expiresAt);
+    } else {
+      isActive = map['isActive'] is bool ? map['isActive'] : true;
+    }
 
     return PromotionModel(
       id: docId,
@@ -46,10 +68,12 @@ class PromotionModel {
                   : 0.0
           : 0.0,
       groupDiscount: groupDiscount,
+      createdAt: createdAt,
+      expiresAt: expiresAt,
+      isActive: isActive,
     );
   }
 
-  // Factory para crear desde un DocumentSnapshot
   factory PromotionModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
     final rawGroupDiscount =
@@ -59,6 +83,22 @@ class PromotionModel {
       final doubleValue = (value is num) ? value.toDouble() : 0.0;
       return MapEntry(intKey, doubleValue);
     });
+
+    DateTime? createdAt = data['createdAt'] != null
+        ? (data['createdAt'] as Timestamp).toDate()
+        : null;
+
+    DateTime? expiresAt = data['expiresAt'] != null
+        ? (data['expiresAt'] as Timestamp).toDate()
+        : null;
+
+    final now = DateTime.now();
+    bool isActive = true;
+    if (expiresAt != null) {
+      isActive = now.isBefore(expiresAt);
+    } else {
+      isActive = data['isActive'] is bool ? data['isActive'] : true;
+    }
 
     return PromotionModel(
       id: doc.id,
@@ -71,7 +111,9 @@ class PromotionModel {
                   : 0.0
           : 0.0,
       groupDiscount: groupDiscount,
-      isActive: data['isActive'] is bool ? data['isActive'] : false,
+      createdAt: createdAt,
+      expiresAt: expiresAt,
+      isActive: isActive,
     );
   }
 }

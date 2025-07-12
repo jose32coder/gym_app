@@ -16,6 +16,7 @@ class PromosForm extends StatefulWidget {
 }
 
 class _PromosFormState extends State<PromosForm> {
+  // Controladores y variables existentes
   final TextEditingController promotionNameController = TextEditingController();
   double discountValue = 0;
   bool isActive = true;
@@ -26,6 +27,9 @@ class _PromosFormState extends State<PromosForm> {
 
   bool showGroupDiscounts = false;
 
+  // Nueva variable para la fecha de expiración
+  DateTime? expiresAt;
+
   void resetForm() {
     promotionNameController.clear();
     discountValue = 0;
@@ -34,6 +38,7 @@ class _PromosFormState extends State<PromosForm> {
     discount4Controller.clear();
     isActive = true;
     showGroupDiscounts = false;
+    expiresAt = null; // Reset fecha también
     setState(() {});
   }
 
@@ -46,6 +51,28 @@ class _PromosFormState extends State<PromosForm> {
     super.dispose();
   }
 
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime now = DateTime.now();
+    final DateTime initialDate = expiresAt ?? now;
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: now,
+      lastDate: DateTime(now.year + 5),
+    );
+    if (picked != null && picked != expiresAt) {
+      setState(() {
+        expiresAt = picked;
+      });
+    }
+  }
+
+  bool get isPromotionActive {
+    if (expiresAt == null) return isActive;
+    final now = DateTime.now();
+    return isActive && now.isBefore(expiresAt!);
+  }
+
   void _guardarPromotion() async {
     final uid = FirebaseAuth.instance.currentUser!.uid;
     final nombre = promotionNameController.text.trim();
@@ -55,6 +82,19 @@ class _PromosFormState extends State<PromosForm> {
             content: Text('El nombre de la promoción es obligatorio')),
       );
       return;
+    }
+
+    if (expiresAt == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Debe seleccionar una fecha de expiración')),
+      );
+      return;
+    }
+
+    // Validar si expiró justo antes de guardar y actualizar isActive
+    if (DateTime.now().isAfter(expiresAt!)) {
+      isActive = false;
     }
 
     final Map<int, double> groupDiscounts = {};
@@ -72,7 +112,9 @@ class _PromosFormState extends State<PromosForm> {
       name: nombre,
       discount: discountValue,
       groupDiscount: groupDiscounts,
-      isActive: isActive, // Nuevo campo añadido
+      isActive: isActive,
+      createdAt: DateTime.now(),
+      expiresAt: expiresAt,
     );
 
     try {
@@ -106,6 +148,12 @@ class _PromosFormState extends State<PromosForm> {
       discount2Controller.text = promo.groupDiscount[2]?.toString() ?? '';
       discount3Controller.text = promo.groupDiscount[3]?.toString() ?? '';
       discount4Controller.text = promo.groupDiscount[4]?.toString() ?? '';
+      expiresAt = promo.expiresAt;
+
+      // Actualizar isActive automáticamente si expiró
+      if (expiresAt != null && DateTime.now().isAfter(expiresAt!)) {
+        isActive = false;
+      }
     }
   }
 
@@ -142,6 +190,7 @@ class _PromosFormState extends State<PromosForm> {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
+            // Campo nombre promo
             TextField(
               controller: promotionNameController,
               decoration: InputDecoration(
@@ -154,14 +203,11 @@ class _PromosFormState extends State<PromosForm> {
             ),
             const SizedBox(height: 20),
 
-            // Slider de descuento
+            // Slider descuento
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Descuento (%)',
-                  style: theme.textTheme.titleMedium,
-                ),
+                Text('Descuento (%)', style: theme.textTheme.titleMedium),
                 Slider(
                   value: discountValue,
                   min: 0,
@@ -178,13 +224,36 @@ class _PromosFormState extends State<PromosForm> {
               ],
             ),
 
+            const SizedBox(height: 20),
+
+            // Selector fecha expiración
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Estado de la promoción',
-                  style: theme.textTheme.titleMedium,
+                Text('Fecha de expiración', style: theme.textTheme.titleMedium),
+                TextButton(
+                  onPressed: () => _selectDate(context),
+                  child: Text(
+                    expiresAt == null
+                        ? 'Seleccionar fecha'
+                        : '${expiresAt!.day}/${expiresAt!.month}/${expiresAt!.year}',
+                    style: TextStyle(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
+              ],
+            ),
+
+            const SizedBox(height: 20),
+
+            // Switch estado
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Estado de la promoción',
+                    style: theme.textTheme.titleMedium),
                 Switch(
                   value: isActive,
                   onChanged: (value) {
@@ -198,12 +267,10 @@ class _PromosFormState extends State<PromosForm> {
 
             const SizedBox(height: 20),
 
-            // Sección descuentos por grupo
+            // Sección descuentos por grupo (igual que antes)
             ListTile(
-              title: Text(
-                'Descuentos por grupo',
-                style: theme.textTheme.titleMedium,
-              ),
+              title: Text('Descuentos por grupo',
+                  style: theme.textTheme.titleMedium),
               trailing: Icon(
                 showGroupDiscounts
                     ? Icons.keyboard_arrow_up
@@ -233,7 +300,7 @@ class _PromosFormState extends State<PromosForm> {
 
             const SizedBox(height: 30),
 
-            // Botones
+            // Botones guardar/cancelar
             Row(
               children: [
                 Expanded(

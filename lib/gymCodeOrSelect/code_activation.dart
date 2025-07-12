@@ -1,4 +1,5 @@
 import 'package:basic_flutter/viewmodel/user_viewmodel.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -16,6 +17,7 @@ class _CodeActivationState extends State<CodeActivation> {
   final _nombreController = TextEditingController();
   final _direccionController = TextEditingController();
   final _telefonoController = TextEditingController();
+  final _rifController = TextEditingController();
   final uid = FirebaseAuth.instance.currentUser!.uid;
   bool cargando = false;
 
@@ -113,7 +115,10 @@ class _CodeActivationState extends State<CodeActivation> {
       nombreGimnasio: _nombreController.text.trim(),
       direccionGimnasio: _direccionController.text.trim(),
       telefonoGimnasio: _telefonoController.text.trim(),
+      rif: _rifController.text.trim(),
     );
+
+    final token = await FirebaseMessaging.instance.getToken();
 
     if (gimnasioId != null) {
       await usuarioVM.registrarUsuarioEnGimnasio(
@@ -123,6 +128,7 @@ class _CodeActivationState extends State<CodeActivation> {
         nombre: userData['nombre'],
         apellido: userData['apellido'],
         cedula: userData['cedula'],
+        token: token,
       );
 
       setState(() {
@@ -251,6 +257,18 @@ class _CodeActivationState extends State<CodeActivation> {
                         fillColor:
                             isDarkMode ? Colors.grey.shade800 : Colors.white,
                         filled: true,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: _rifController,
+                      decoration: buildInputDecoration(
+                        hintText: 'Rif',
+                        prefixIcon: const Icon(
+                          Icons.fitness_center,
+                          size: 24,
+                        ),
+                        isDarkMode: isDarkMode,
                       ),
                     ),
                     const SizedBox(height: 35),

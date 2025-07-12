@@ -159,7 +159,6 @@ class _IconButton extends StatelessWidget {
   final VoidCallback onPressed;
 
   const _IconButton({
-    super.key,
     required this.icon,
     required this.iconColor,
     required this.backgroundColor,

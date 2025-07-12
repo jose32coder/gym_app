@@ -1,5 +1,6 @@
 import 'package:basic_flutter/models/model_promo.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class PromotionDetails extends StatelessWidget {
   final PromotionModel promotion;
@@ -17,6 +18,18 @@ class PromotionDetails extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
+
+    // Formatear fecha de expiración
+    final expirationDateFormatted = promotion.expiresAt != null
+        ? DateFormat('dd/MM/yyyy').format(promotion.expiresAt!)
+        : 'No definida';
+
+    // Calcular estado actual
+    final now = DateTime.now();
+    final isExpired =
+        promotion.expiresAt != null && now.isAfter(promotion.expiresAt!);
+    final isCurrentlyActive = promotion.isActive && !isExpired;
+    final statusText = isCurrentlyActive ? 'Activa' : 'Inactiva';
 
     return Dialog(
       backgroundColor: theme.colorScheme.surface,
@@ -39,6 +52,9 @@ class PromotionDetails extends StatelessWidget {
               _buildDetailRow('Nombre', promotion.name, theme),
               _buildDetailRow('Descuento general',
                   '${promotion.discount.toStringAsFixed(0)}%', theme),
+              _buildDetailRow(
+                  'Fecha de vencimiento', expirationDateFormatted, theme),
+              _buildDetailRow('Estatus', statusText, theme),
               const SizedBox(height: 16),
               if (promotion.groupDiscount.isNotEmpty) ...[
                 Text(

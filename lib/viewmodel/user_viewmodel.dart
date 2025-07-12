@@ -65,6 +65,7 @@ class UserViewmodel extends ChangeNotifier {
     required String nombreGimnasio,
     required String direccionGimnasio,
     required String telefonoGimnasio,
+    required String rif,
   }) async {
     _isLoading = true;
     notifyListeners();
@@ -84,6 +85,7 @@ class UserViewmodel extends ChangeNotifier {
         'nombre': nombreGimnasio,
         'direccion': direccionGimnasio,
         'telefono': telefonoGimnasio,
+        'rif': rif,
         'propietario': uid,
         'codigo': codigo,
         'creadoEn': FieldValue.serverTimestamp(),
@@ -138,6 +140,7 @@ class UserViewmodel extends ChangeNotifier {
     String? membresia,
     double? pago,
     String? codigoActivacion,
+    String? token,
   }) async {
     _isLoading = true;
     notifyListeners();
@@ -168,6 +171,7 @@ class UserViewmodel extends ChangeNotifier {
         'cedula': cedula ?? userDoc['cedula'],
         'tipo': tipoUsuario,
         'codigoGimnasio': codigoFinal,
+        'token': token ?? '',
         'talla': tipoUsuario == 'Cliente' ? talla : '',
         'peso': tipoUsuario == 'Cliente' ? peso : '',
         'membresia': tipoUsuario == 'Cliente' ? membresia : '',

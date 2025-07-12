@@ -19,7 +19,7 @@ class ComprobanteCard extends StatelessWidget {
   final String fecha;
 
   const ComprobanteCard({
-    Key? key,
+    super.key,
     required this.nombre,
     required this.cedula,
     required this.concepto,
@@ -29,7 +29,7 @@ class ComprobanteCard extends StatelessWidget {
     this.montoDolares,
     this.montoBolivares,
     required this.fecha,
-  }) : super(key: key);
+  });
 
   void _compartirComprobanteComoPDF(BuildContext context) async {
     final pdf = pw.Document();
@@ -266,7 +266,7 @@ class ComprobanteCard extends StatelessWidget {
               if (tipoPago == 'Dólares')
                 TextLabelValue(
                   label: 'Monto en \$:',
-                  value: '\$ ${montoTotal?.toStringAsFixed(2) ?? '0.00'}',
+                  value: '\$ ${montoTotal.toStringAsFixed(2) ?? '0.00'}',
                   valueColor: theme.colorScheme.onSurface,
                   fontSize: 16,
                 ),
@@ -312,16 +312,12 @@ class ComprobanteCard extends StatelessWidget {
                       onPressed: () => _compartirComprobanteComoPDF(context),
                       icon: Icon(
                         Icons.share,
-                        color: isDarkMode
-                            ? theme.colorScheme.onInverseSurface
-                            : theme.colorScheme.onSurface,
+                        color: theme.colorScheme.onSurface,
                       ),
                       label: Text(
                         'Compartir',
                         style: TextStyle(
-                          color: isDarkMode
-                              ? theme.colorScheme.onInverseSurface
-                              : theme.colorScheme.onSurface,
+                          color: theme.colorScheme.onSurface,
                         ),
                       ),
                       style: ElevatedButton.styleFrom(
@@ -336,7 +332,7 @@ class ComprobanteCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  SizedBox(
+                  const SizedBox(
                     width: 12,
                   ),
                   Expanded(
@@ -352,16 +348,12 @@ class ComprobanteCard extends StatelessWidget {
                       },
                       icon: Icon(
                         Icons.print,
-                        color: isDarkMode
-                            ? theme.colorScheme.onInverseSurface
-                            : theme.colorScheme.onSurface,
+                        color: theme.colorScheme.onSurface
                       ),
                       label: Text(
                         'Imprimir',
                         style: TextStyle(
-                          color: isDarkMode
-                              ? theme.colorScheme.onInverseSurface
-                              : theme.colorScheme.onSurface,
+                          color: theme.colorScheme.onSurface
                         ),
                       ),
                       style: ElevatedButton.styleFrom(
@@ -378,7 +370,7 @@ class ComprobanteCard extends StatelessWidget {
                   ),
                 ],
               ),
-              SizedBox(
+              const SizedBox(
                 height: 15,
               ),
               SizedBox(
@@ -427,12 +419,12 @@ class TextLabelValue extends StatelessWidget {
   final double? fontSize;
 
   const TextLabelValue({
-    Key? key,
+    super.key,
     required this.label,
     required this.value,
     this.valueColor,
     this.fontSize,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -40,6 +40,8 @@ dependencies:
   http: ^1.4.0
   printing: ^5.14.2
   flutter_local_notifications: ^19.3.0
+  qr_code_tools: ^0.2.0
+  mobile_scanner: ^7.0.1
 
 dev_dependencies:
   flutter_test:

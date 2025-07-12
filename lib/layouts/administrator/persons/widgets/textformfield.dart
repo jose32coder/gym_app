@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:basic_flutter/components/text_style.dart';
 import 'package:basic_flutter/components/validations.dart';
 import 'package:basic_flutter/layouts/administrator/admin/adminPay/admin_pay.dart';
-import 'package:basic_flutter/layouts/administrator/admin/adminPay/payViews/pay_register.dart';
 import 'package:basic_flutter/viewmodel/person_viewmodel.dart';
 import 'package:basic_flutter/viewmodel/user_viewmodel.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -201,10 +200,10 @@ class _TextFormPageState extends State<TextFormPage> {
     await personVM.asociarUsuarioAGimnasioPorCodigo(
       usuarioId: nuevoUsuarioId,
       tipoUsuario: _selectedRol,
-      talla: '',
-      peso: '',
+      talla: 'Sin talla',
+      peso: 'Sin peso',
       membresia: 'Sin membresía',
-      pago: '',
+      pago: 'Sin pago',
       codeGym: _codeController.text.trim(),
     );
   }
@@ -303,8 +302,9 @@ class _TextFormPageState extends State<TextFormPage> {
             MaterialPageRoute(
               builder: (_) => AdminPay(
                   initialIndex: 0,
-                  cedula: _cedController.text,
-                  nombre: _nameController.text), // o 1, o 2 según la pestaña
+                  cedula: _cedController.text.trim(),
+                  nombre:
+                      _nameController.text.trim()), // o 1, o 2 según la pestaña
             ),
           );
         } else {

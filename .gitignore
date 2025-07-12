@@ -18,6 +18,7 @@
 /build/
 **/doc/api/
 **/ios/Flutter/.last_build_id
+**/node_modules/
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies

@@ -17,13 +17,13 @@ class BubbleClient extends StatelessWidget {
         child: Column(
           children: [
             CircleAvatar(
-              child: Text(inicial),
               radius: 32,
+              child: Text(inicial),
             ),
             const SizedBox(width: 10),
             Text(
               nombre,
-              style: TextStyle(
+              style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
               ),

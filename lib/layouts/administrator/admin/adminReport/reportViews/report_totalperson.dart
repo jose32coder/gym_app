@@ -233,7 +233,7 @@ class _ReportTotalpersonState extends State<ReportTotalperson> {
                 },
                 onGenerateExcel: () async {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Generando Excel')),
+                    const SnackBar(content: Text('Generando Excel')),
                   );
                   await generateAndOpenExcel();
                 },

@@ -9,7 +9,7 @@ class PayViewModel extends ChangeNotifier {
   String? gimnasioId;
   List<Map<String, dynamic>> _payments = [];
   List<Map<String, dynamic>> get payments => _payments;
-  bool _isLoading = false;
+  final bool _isLoading = false;
   bool get isLoading => _isLoading;
 
   /// Obtiene el gimnasioId del usuario actual
@@ -108,6 +108,7 @@ class PayViewModel extends ChangeNotifier {
       'habilitado': true,
       'fechaUltimoPago': fechaPago,
       'membresia': nombreMembresia,
+      'fechaVencimiento': fechaCorte
     });
 
     // Registrar al usuario en la membresía
@@ -136,8 +137,6 @@ class PayViewModel extends ChangeNotifier {
           .collection('pagos')
           .orderBy('fechaPago', descending: true)
           .get();
-
-      print('Documentos encontrados: ${querySnapshot.docs.length}');
 
       _payments = querySnapshot.docs.map((doc) {
         final data = doc.data();

@@ -36,8 +36,6 @@ class _SignUpState extends State<SignUp> {
   String? _nameError;
   String? _cedError;
   String? _lastnameError;
-  String? _selectedSexo;
-  String? _sexoError;
 
   @override
   void initState() {
@@ -102,7 +100,6 @@ class _SignUpState extends State<SignUp> {
       _cedError = Validations.validateCed(_cedController.text);
       _nameError = Validations.validateName(_nameController.text);
       _lastnameError = Validations.validateName(_lastnameController.text);
-      _sexoError = _selectedSexo == null ? 'Debes seleccionar un sexo' : null;
     });
 
     return _cedError == null && _nameError == null && _lastnameError == null;
@@ -132,8 +129,7 @@ class _SignUpState extends State<SignUp> {
         _passwordError == null &&
         _cedError == null &&
         _nameError == null &&
-        _lastnameError == null &&
-        _sexoError == null) {
+        _lastnameError == null) {
       setState(() {
         isLoading = true;
       });
@@ -145,7 +141,6 @@ class _SignUpState extends State<SignUp> {
       );
 
       try {
-        await Future.delayed(const Duration(seconds: 1)); // demo
 
         await authViewModel.register(
           ced: _cedController.text.trim(),
@@ -153,7 +148,6 @@ class _SignUpState extends State<SignUp> {
           password: _passwordController.text.trim(),
           name: _nameController.text.trim(),
           lastname: _lastnameController.text.trim(),
-          sexo: _selectedSexo,
         );
 
         if (authViewModel.errorMessage == null) {
@@ -314,38 +308,6 @@ class _SignUpState extends State<SignUp> {
                               const SizedBox(
                                 height: 14,
                               ),
-                              DropdownButtonFormField<String>(
-                                value: _selectedSexo,
-                                decoration: InputDecoration(
-                                  border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(10)),
-                                  filled: true,
-                                  fillColor: isDarkMode
-                                      ? Colors.grey.shade800
-                                      : Colors.white,
-                                  prefixIcon: const Icon(Icons.person_outline),
-                                  errorText: _sexoError,
-                                ),
-                                items: const [
-                                  DropdownMenuItem(
-                                      value: null,
-                                      child: Text('Selecciona un sexo')),
-                                  DropdownMenuItem(
-                                      value: 'Masculino',
-                                      child: Text('Masculino')),
-                                  DropdownMenuItem(
-                                      value: 'Femenino',
-                                      child: Text('Femenino')),
-                                  DropdownMenuItem(
-                                      value: 'Otro', child: Text('Otro')),
-                                ],
-                                onChanged: (value) {
-                                  setState(() {
-                                    _selectedSexo = value;
-                                    _sexoError = null;
-                                  });
-                                },
-                              )
                             ],
                           )
                         : Column(

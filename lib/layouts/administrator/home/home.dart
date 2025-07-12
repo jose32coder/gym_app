@@ -190,7 +190,7 @@ class _HomeState extends State<Home> {
                             icon: Icons.person_off,
                             color: Colors.yellow,
                           ),
-                          ResumeCards(
+                          const ResumeCards(
                             title: 'Por vencer',
                             value: '45',
                             icon: Icons.warning,

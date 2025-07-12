@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class AuthViewmodel extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -46,21 +47,12 @@ class AuthViewmodel extends ChangeNotifier {
     }
   }
 
-  Future<void> createInitialGymForUser(String uid) async {
-    await _firestore
-        .collection('usuarios')
-        .doc(uid)
-        .collection('gimnasios')
-        .add({'codigoGimnasio': ''});
-  }
-
   Future<void> register(
       {required String ced,
       required String email,
       required String password,
       required String name,
-      required String lastname,
-      required String? sexo}) async {
+      required String lastname}) async {
     _isLoading = true;
     notifyListeners();
 
@@ -77,10 +69,9 @@ class AuthViewmodel extends ChangeNotifier {
           ced: ced,
           email: email,
           name: name,
-          lastname: lastname,
-          sexo: sexo);
+        lastname: lastname,
+      );
 
-      await createInitialGymForUser(cred.user!.uid);
 
       _errorMessage = null;
       _successMessage = 'Usuario registrado correctamente';
@@ -97,13 +88,13 @@ class AuthViewmodel extends ChangeNotifier {
   }
 
 
+
   Future<void> saveBasicUserData({
     required String ced,
     required String uid,
     required String email,
     required String name,
     required String lastname,
-    required String? sexo,
   }) async {
     await _firestore.collection('usuarios').doc(uid).set({
       'uid': uid,
@@ -112,7 +103,6 @@ class AuthViewmodel extends ChangeNotifier {
       'nombre': name,
       'apellido': lastname,
       'codigoGimnasio': '',
-      'sexo': sexo
     });
   }
 
@@ -125,6 +115,17 @@ class AuthViewmodel extends ChangeNotifier {
         email: email,
         password: password,
       );
+
+      // Obtener token FCM
+      String? fcmToken = await FirebaseMessaging.instance.getToken();
+
+      if (fcmToken != null) {
+        // Guardar token en Firestore en el documento del usuario
+        await _firestore
+            .collection('usuarios')
+            .doc(userCredential.user!.uid)
+            .update({'fcmToken': fcmToken});
+      }
 
       DocumentSnapshot userDoc = await _firestore
           .collection('usuarios')
@@ -152,6 +153,7 @@ class AuthViewmodel extends ChangeNotifier {
       notifyListeners();
     }
   }
+
 
   Future<void> deleteAccountTotal() async {
     final user = _auth.currentUser;

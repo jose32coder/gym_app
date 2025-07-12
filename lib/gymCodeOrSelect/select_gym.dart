@@ -1,3 +1,4 @@
+import 'package:basic_flutter/components/qr_viewscreen.dart';
 import 'package:basic_flutter/components/text_style.dart';
 import 'package:basic_flutter/viewmodel/auth_viewmodel.dart';
 import 'package:basic_flutter/viewmodel/user_viewmodel.dart';
@@ -101,15 +102,42 @@ class _SelectGymState extends State<SelectGym> {
                       hintText: 'Código',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(
-                          color: errorText != null ? Colors.red : Colors.grey,
-                        ),
                       ),
                       prefixIcon: const Icon(Icons.lock_rounded),
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.qr_code_scanner_rounded),
+                        onPressed: () async {
+                          final code = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const QrViewscreen(),
+                            ),
+                          );
+
+                          if (code != null) {
+                            _codeController.text = code;
+                            // Validación inmediata:
+                            final userVM = Provider.of<UserViewmodel>(context,
+                                listen: false);
+                            final isCodigoValido =
+                                await userVM.validarCodigoActivacion(code, uid);
+
+                            if (!isCodigoValido) {
+                              setState(() {
+                                errorText = 'Código inválido o ya utilizado';
+                              });
+                              return;
+                            }
+
+                            Navigator.of(context).pop();
+                            _onRegisterGym(gimnasioId, nombre, code);
+                          }
+                        },
+                      ),
                       fillColor:
                           isDarkMode ? Colors.grey.shade800 : Colors.white,
                       filled: true,
-                      errorText: errorText, // 👈 se muestra debajo si existe
+                      errorText: errorText,
                     ),
                   ),
                 ],

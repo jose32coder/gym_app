@@ -1,7 +1,6 @@
 import 'package:basic_flutter/components/text_style.dart';
 import 'package:basic_flutter/layouts/client/widgets/edad_selector.dart';
 import 'package:flutter/material.dart';
-import 'package:vertical_weight_slider/vertical_weight_slider.dart';
 
 class SelectedDatePersonal extends StatefulWidget {
   const SelectedDatePersonal({super.key});

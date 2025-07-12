@@ -13,6 +13,7 @@ class MembershipModel {
     required this.price,
     required this.membershipType,
     required this.isActive,
+    
   });
 
   factory MembershipModel.fromFirestore(DocumentSnapshot doc) {

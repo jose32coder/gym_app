@@ -29,8 +29,8 @@ class _ChangePasswordState extends State<ChangePassword> {
   bool _obscureConfirmPassword = true;
 
   // Tus checkboxes: se mantienen intactos
-  bool _twoStepAuth = false;
-  bool _lockWithPin = false;
+  final bool _twoStepAuth = false;
+  final bool _lockWithPin = false;
 
   late final FocusNode _passwordFocusNode;
   late final FocusNode _newPasswordFocusNode;

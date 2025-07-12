@@ -16,7 +16,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'components/pay_amount_field.dart';
 import 'components/pay_date_fields.dart';
-import 'package:collection/collection.dart';
 
 class AdminPayForm extends StatefulWidget {
   final GlobalKey<FormState> formKey;
@@ -187,7 +186,7 @@ class _AdminPayFormState extends State<AdminPayForm> {
 
   void _calcularMontoTotal() {
     membresiaSeleccionada = _membresiasActivas.firstWhereOrNull(
-      (membresia) => membresia.name == _membership,
+      (membresia) => membresia.membershipType == _membership,
     );
 
     if (membresiaSeleccionada == null) {
@@ -339,17 +338,17 @@ class _AdminPayFormState extends State<AdminPayForm> {
                 ),
                 ..._membresiasActivas.map((membresia) {
                   return DropdownMenuItem<String>(
-                    value: membresia.name,
+                    value: membresia.membershipType,
                     child: Text(
-                        '${membresia.name} — \$${membresia.price?.toStringAsFixed(2) ?? 'N/A'}'),
+                        '${membresia.name} — ${membresia.membershipType} - \$${membresia.price?.toStringAsFixed(2) ?? 'N/A'}'),
                   );
-                }).toList(),
+                }),
               ],
               onChanged: (value) {
                 setState(() {
                   _membership = value ?? ''; // Si es null, asigna ''
                   membresiaSeleccionada = _membresiasActivas.firstWhereOrNull(
-                    (m) => m.name == value,
+                    (m) => m.membershipType == value,
                   );
                   _cedError = Validations.validateCed(value);
                   _actualizarRangoFecha(_membership);
@@ -519,7 +518,7 @@ class _AdminPayFormState extends State<AdminPayForm> {
               maxLines: 5, // Puedes ajustar esto según la altura que necesites
               minLines: 1,
               decoration: InputDecoration(
-                prefixIcon: Icon(Icons.notes),
+                prefixIcon: const Icon(Icons.notes),
                 hintText: 'Observaciones',
                 alignLabelWithHint:
                     true, // Para que la etiqueta quede alineada arriba
@@ -563,7 +562,7 @@ class _AdminPayFormState extends State<AdminPayForm> {
                     ),
                   ),
                 ),
-                SizedBox(
+                const SizedBox(
                   width: 12,
                 ),
                 Expanded(
