@@ -1,8 +1,131 @@
 const admin = require("firebase-admin");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
+const serviceAccount = require("./serviceAccountKey.json");
 
-admin.initializeApp();
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
+
 const db = admin.firestore();
+
+async function notificarAdministradoresYGimnasio(
+  gimnasioId,
+  usuarioData,
+  usuarioId,
+  nuevoEstado
+) {
+  try {
+    const adminsSnapshot = await db
+      .collection("gimnasios")
+      .doc(gimnasioId)
+      .collection("usuarios")
+      .where("tipo", "in", ["Administrador", "Dueño"])
+      .get();
+
+    if (adminsSnapshot.empty) {
+      console.log(
+        `ℹ️ No hay administradores/dueños para el gimnasio ${gimnasioId}`
+      );
+      return;
+    }
+
+    // Filtrar tokens válidos y mantener referencia a cada admin para guardar notificación en subcolección
+    const adminsConToken = adminsSnapshot.docs
+      .map((doc) => ({
+        id: doc.id,
+        token: doc.data().token
+      }))
+      .filter(
+        (admin) => typeof admin.token === "string" && admin.token.length > 10
+      );
+
+    if (adminsConToken.length === 0) {
+      console.log(
+        `ℹ️ No hay administradores/dueños con token registrado en este gimnasio`
+      );
+      return;
+    }
+
+    const tokens = adminsConToken.map((a) => a.token);
+
+    const payloadNotification = {
+      title: `Cambio de estado usuario ${usuarioId}`,
+      body: `El usuario ha cambiado a estado ${nuevoEstado}`,
+      sound: "default"
+    };
+
+    const payloadData = {
+      gimnasioId,
+      usuarioId,
+      nuevoEstado,
+      tipoNotificacion: "estadoUsuario"
+    };
+
+    const response = await admin.messaging().sendMulticast({
+      tokens,
+      notification: payloadNotification,
+      data: payloadData
+    });
+
+    console.log(
+      `📲 Notificaciones enviadas: ${response.successCount} exitosas, ${response.failureCount} fallidas.`
+    );
+
+    response.responses.forEach((resp, idx) => {
+      if (resp.error) {
+        console.error(`❌ Error enviando a token ${tokens[idx]}:`, resp.error);
+      }
+    });
+
+    const notificacionData = {
+      titulo: payloadNotification.title,
+      mensaje: payloadNotification.body,
+      fechaEnvio: admin.firestore.FieldValue.serverTimestamp(),
+      tipo: "estadoUsuario",
+      tokensDestino: tokens,
+      exitosos: response.successCount,
+      fallidos: response.failureCount,
+      detalles: response.responses.map((resp, idx) => ({
+        token: tokens[idx],
+        success: resp.success,
+        error: resp.error ? resp.error.message : null
+      }))
+    };
+
+    // Guardar en colección general de notificaciones del gimnasio
+    await db
+      .collection("gimnasios")
+      .doc(gimnasioId)
+      .collection("notificaciones")
+      .add(notificacionData);
+
+    // Guardar en la subcolección 'notificaciones' de cada usuario admin/dueño
+    const batch = db.batch();
+
+    adminsConToken.forEach((adminUser, index) => {
+      const userNotificacionRef = db
+        .collection("gimnasios")
+        .doc(gimnasioId)
+        .collection("usuarios")
+        .doc(adminUser.id)
+        .collection("notificaciones")
+        .doc();
+
+      batch.set(userNotificacionRef, {
+        ...notificacionData,
+        fechaEnvio: admin.firestore.FieldValue.serverTimestamp()
+      });
+    });
+
+    await batch.commit();
+
+    console.log(
+      `📝 Notificación registrada en subcolecciones de administradores/dueños para gimnasio ${gimnasioId}`
+    );
+  } catch (error) {
+    console.error(`❌ Error notificando administradores/gimnasio:`, error);
+  }
+}
 
 exports.actualizarEstadosUsuarios = onSchedule(
   {
@@ -10,120 +133,24 @@ exports.actualizarEstadosUsuarios = onSchedule(
     timeZone: "America/Caracas"
   },
   async (event) => {
-    console.info("🟢 Iniciando tarea programada de actualización de usuarios");
+    console.log("🟢 Iniciando tarea programada de actualización de usuarios");
 
     try {
-      const gimnasiosSnapshot = await db.collection("gimnasios").get();
+      // Aquí tu lógica real para actualizar estados, por ejemplo:
+      // await tuFuncionDeActualizarEstados();
 
-      if (gimnasiosSnapshot.empty) {
-        console.warn("⚠️ No hay gimnasios registrados.");
-        return null;
-      }
+      // Enviar notificación siempre, para pruebas
+      const message = {
+        notification: {
+          title: "Notificación de prueba",
+          body: "Este es un mensaje de prueba enviado a todos los usuarios."
+        },
+        topic: "general" // asegúrate que la app esté suscrita a este topic
+      };
 
-      for (const gimnasioDoc of gimnasiosSnapshot.docs) {
-        const gimnasioId = gimnasioDoc.id;
-        const gimnasioData = gimnasioDoc.data();
+      const response = await admin.messaging().send(message);
+      console.log("✅ Notificación general enviada:", response);
 
-        console.info(`➡️ Procesando gimnasio: ${gimnasioId}`);
-
-        const usuariosSnapshot = await db
-          .collection(`gimnasios/${gimnasioId}/usuarios`)
-          .where("estado", "in", ["activo", "pendiente"])
-          .get();
-
-        if (usuariosSnapshot.empty) {
-          console.info("   ⚠️ No hay usuarios activos o pendientes.");
-          continue;
-        }
-
-        for (const usuarioDoc of usuariosSnapshot.docs) {
-          const usuarioData = usuarioDoc.data();
-          const usuarioId = usuarioDoc.id;
-
-          if (
-            !usuarioData.fechaCorte ||
-            typeof usuarioData.fechaCorte.toDate !== "function"
-          ) {
-            console.warn(
-              `   ⚠️ Usuario ${usuarioId} sin fecha de corte válida. Se omite.`
-            );
-            continue;
-          }
-
-          const fechaCorte = usuarioData.fechaCorte.toDate();
-          const ahora = new Date();
-
-          if (ahora >= fechaCorte) {
-            // Cambiar a inactivo
-            await db
-              .doc(`gimnasios/${gimnasioId}/usuarios/${usuarioId}`)
-              .update({ estado: "inactivo" });
-
-            console.info(`   🔴 Usuario ${usuarioId} cambiado a INACTIVO`);
-
-            // Enviar notificación push al administrador si tiene token
-            if (gimnasioData.token) {
-              const payload = {
-                notification: {
-                  title: "Usuario inactivado",
-                  body: `El usuario ${
-                    usuarioData.nombre || usuarioId
-                  } ha sido inactivado por vencimiento de membresía.`,
-                  sound: "default"
-                },
-                data: {
-                  gimnasioId: gimnasioId,
-                  usuarioId: usuarioId
-                }
-              };
-
-              await admin
-                .messaging()
-                .sendToDevice(gimnasioData.token, payload)
-                .then((response) => {
-                  console.info(
-                    `   📲 Notificación enviada a administrador del gimnasio ${gimnasioId}`
-                  );
-                })
-                .catch((error) => {
-                  console.error(
-                    `   ❌ Error al enviar notificación push:`,
-                    error
-                  );
-                });
-            } else {
-              console.info(
-                `   ℹ️ Gimnasio ${gimnasioId} sin token de notificación.`
-              );
-            }
-          } else {
-            // Verificar días restantes
-            const diffMs = fechaCorte - ahora;
-            const diffDias = diffMs / (1000 * 60 * 60 * 24);
-
-            if (diffDias < 5) {
-              await db
-                .doc(`gimnasios/${gimnasioId}/usuarios/${usuarioId}`)
-                .update({ estado: "pendiente" });
-              console.info(
-                `   🟡 Usuario ${usuarioId} cambiado a PENDIENTE (${diffDias.toFixed(
-                  2
-                )} días restantes)`
-              );
-            } else {
-              console.info(
-                `   🟢 Usuario ${usuarioId} sigue ACTIVO (${diffDias.toFixed(
-                  2
-                )} días restantes)`
-              );
-            }
-          }
-        }
-
-        console.info(`➡️ Finalizado procesamiento de gimnasio: ${gimnasioId}`);
-      }
-
-      console.info("✅ Tarea programada completada.");
       return null;
     } catch (error) {
       console.error("❌ Error en la tarea programada:", error);
