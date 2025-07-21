@@ -30,6 +30,7 @@ class _PreferencesState extends State<Preferences> {
 
     return Scaffold(
       appBar: AppBar(
+        toolbarHeight: 45,
         title: Text(
           'Preferencias',
           style: TextStyles.boldPrimaryText(context),

@@ -5,6 +5,7 @@ import 'package:basic_flutter/layouts/administrator/admin/adminMemberAndPromos/a
 import 'package:basic_flutter/layouts/administrator/admin/adminMemberAndPromos/adminPromos/widgets/promos_filter.dart';
 import 'package:basic_flutter/layouts/administrator/admin/adminMemberAndPromos/adminPromos/widgets/promos_form.dart';
 import 'package:basic_flutter/models/model_promo.dart';
+import 'package:basic_flutter/services/gimnasio_services.dart';
 import 'package:basic_flutter/viewmodel/promos_viewmodel.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -18,7 +19,8 @@ class AdminPromos extends StatefulWidget {
 }
 
 class _AdminPromosState extends State<AdminPromos> {
-  final PromotionViewModel _viewmodel = PromotionViewModel();
+  final PromotionViewModel _viewmodel = PromotionViewModel(GimnasioService());
+
 
   String? _filterType;
   List<PromotionModel> _cachedPromotions = [];
@@ -40,7 +42,8 @@ class _AdminPromosState extends State<AdminPromos> {
 
   Future<void> _fetchGimnasioId(String usuarioId) async {
     try {
-      final id = await _viewmodel.obtenerGimnasioId(usuarioId);
+      final id = await _viewmodel.gimnasioService.obtenerGimnasioId(usuarioId);
+
       setState(() {
         gimnasioId = id;
       });

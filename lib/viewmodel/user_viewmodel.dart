@@ -177,7 +177,7 @@ class UserViewmodel extends ChangeNotifier {
         'membresia': tipoUsuario == 'Cliente' ? membresia : '',
         'pago': tipoUsuario == 'Cliente' ? pago : '',
         'habilitado': true,
-        'estado': 'activo',
+        'estado': 'pendiente',
         'fechaUltimoPago':
             tipoUsuario == 'Cliente' ? FieldValue.serverTimestamp() : '',
       };

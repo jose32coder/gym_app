@@ -2,6 +2,7 @@
 
 import 'package:basic_flutter/components/notification_modal.dart';
 import 'package:basic_flutter/models/model_promo.dart';
+import 'package:basic_flutter/services/gimnasio_services.dart';
 import 'package:basic_flutter/viewmodel/promos_viewmodel.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -118,7 +119,7 @@ class _PromosFormState extends State<PromosForm> {
     );
 
     try {
-      await PromotionViewModel().guardarPromocion(
+      await PromotionViewModel(GimnasioService()).guardarPromocion(
         usuarioId: uid,
         promotion: nuevaPromo,
       );

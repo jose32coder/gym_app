@@ -79,4 +79,33 @@ class GimnasioService {
       'fechaUso': FieldValue.serverTimestamp(),
     });
   }
+
+  Future<String> obtenerGimnasioId(String usuarioId) async {
+    final userDoc = await _db.collection('usuarios').doc(usuarioId).get();
+
+    if (!userDoc.exists) {
+      throw Exception('Usuario no encontrado');
+    }
+
+    final userData = userDoc.data()!;
+    final codigoGimnasioUsuario = userData['codigoGimnasio'] ?? '';
+
+    if (codigoGimnasioUsuario.isEmpty) {
+      throw Exception('El usuario no tiene código de gimnasio asignado');
+    }
+
+    final codigo = codigoGimnasioUsuario.substring(0, 8);
+
+    final gimnasioQuery = await _db
+        .collection('gimnasios')
+        .where('codigo', isEqualTo: codigo)
+        .limit(1)
+        .get();
+
+    if (gimnasioQuery.docs.isEmpty) {
+      throw Exception('Gimnasio con código $codigo no encontrado');
+    }
+
+    return gimnasioQuery.docs.first.id;
+  }
 }

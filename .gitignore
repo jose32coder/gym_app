@@ -4,6 +4,7 @@
 *.log
 *.pyc
 *.class
+*.env
 
 # IDE / Editor settings
 .idea/
@@ -20,6 +21,7 @@
 **/ios/Flutter/.last_build_id
 **/node_modules/
 .dart_tool/
+functions/serviceAccountKey.json
 .flutter-plugins
 .flutter-plugins-dependencies
 .pub-cache/

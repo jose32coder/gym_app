@@ -19,6 +19,7 @@ class Administration extends StatelessWidget {
           'Administración',
           style: TextStyles.boldPrimaryText(context),
         ),
+        toolbarHeight: 45,
         centerTitle: false,
         actions: [
           Padding(
@@ -49,7 +50,7 @@ class Administration extends StatelessWidget {
               AdminCard(
                 title: 'Personas',
                 subtitle: 'Listado de personas del gimnasio',
-                imagePath: 'assets/images/fondo1.jpg',
+                imagePath: 'assets/images/fondo1.webp',
                 onPressed: () {
                   Navigator.push(
                       context,

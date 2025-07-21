@@ -58,7 +58,7 @@ class _AdminPayState extends State<AdminPay> {
           ),
           NavigationDestination(
             icon: Icon(Icons.card_membership_outlined),
-            label: 'Deudas',
+            label: 'Estado',
           ),
           NavigationDestination(
             icon: Icon(Icons.local_offer_outlined),

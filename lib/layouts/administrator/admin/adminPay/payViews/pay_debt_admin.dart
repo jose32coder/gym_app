@@ -1,202 +1,159 @@
 import 'package:basic_flutter/components/notification_modal.dart';
 import 'package:basic_flutter/components/text_style.dart';
-import 'package:basic_flutter/layouts/administrator/admin/adminPay/payViews/widgets/member_card_state.dart';
+import 'package:basic_flutter/layouts/administrator/admin/adminPay/payViews/widgets/payment_details_estate_modal.dart';
+import 'package:basic_flutter/layouts/administrator/admin/adminPay/payViews/widgets/payment_details_modal.dart';
+import 'package:basic_flutter/viewmodel/person_viewmodel.dart';
 import 'package:flutter/material.dart';
-
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:provider/provider.dart';
+import 'widgets/payment_state_card.dart';
+import '../../../../../components/search_bar.dart';
 
 class PayDebtAdmin extends StatefulWidget {
   const PayDebtAdmin({super.key});
 
   @override
-  State<PayDebtAdmin> createState() => _PayDebtAdminState();
+  _PayDebtAdminState createState() => _PayDebtAdminState();
 }
 
 class _PayDebtAdminState extends State<PayDebtAdmin> {
-  Future<List<dynamic>>? membresiasFuture;
-  String? estadoSeleccionado;
-
-  
+  TextEditingController searchController = TextEditingController();
+  Map<String, dynamic>? pagoSeleccionado;
 
   @override
   void initState() {
     super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final personasVM = context.read<PersonasViewModel>();
+      if (!personasVM.isLoading && personasVM.usuarios.isEmpty) {
+        personasVM.cargarUsuariosSiNecesario();
+      }
+    });
+
+    searchController.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
+
+  List<Map<String, dynamic>> _filtrarUsuarios(
+      List<Map<String, dynamic>> usuarios) {
+    final query = searchController.text.toLowerCase();
+    if (query.isEmpty) return usuarios;
+
+    return usuarios.where((payment) {
+      final nombre = payment['Cliente']?.toLowerCase() ?? '';
+      return nombre.contains(query);
+    }).toList();
+  }
+
+  Future<void> _recargarDatos() async {
+    await context.read<PersonasViewModel>().recargarUsuarios();
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Datos de estado clientes actualizados')),
+    );
+  }
+
+  void _showPaymentDetails(Map<String, dynamic> payment) {
+    setState(() {
+      pagoSeleccionado = payment;
+    });
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) {
+        return ClienteDetailsModal(
+          cliente: payment,
+          onClose: () {
+            Navigator.of(context).pop();
+            setState(() {
+              pagoSeleccionado = null;
+            });
+          },
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final personasVM = context.watch<PersonasViewModel>();
+
+    final usuariosFiltrados = _filtrarUsuarios(personasVM.usuarios);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Lista de pagos',
+          'Estado de cliente',
           style: TextStyles.boldPrimaryText(context),
         ),
         centerTitle: true,
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 10),
-            child: IconButton(
-              icon: const FaIcon(FontAwesomeIcons.bell),
-              onPressed: () {
-                showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  shape: const RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.vertical(top: Radius.circular(20)),
-                  ),
-                  builder: (context) => const NotificationModal(),
-                );
-              },
+            child: Row(
+              children: [
+                IconButton(
+                  icon: const FaIcon(FontAwesomeIcons.rotateRight),
+                  onPressed: personasVM.isLoading ? null : _recargarDatos,
+                ),
+                IconButton(
+                  icon: const FaIcon(FontAwesomeIcons.bell),
+                  onPressed: () {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.vertical(top: Radius.circular(20)),
+                      ),
+                      builder: (context) => const NotificationModal(),
+                    );
+                  },
+                ),
+              ],
             ),
           )
         ],
       ),
-      body: FutureBuilder<List<dynamic>>(
-        future: membresiasFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return const Center(child: Text('Error al cargar datos'));
-          } else {
-            final membresias = snapshot.data ?? [];
-
-            final membresiasFiltradas = membresias.where((m) {
-              final estadoCoincide = estadoSeleccionado == null ||
-                  m['estado'] == estadoSeleccionado;
-              return estadoCoincide;
-            }).toList();
-
-            return Column(
+      body: personasVM.isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
               children: [
                 Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: FilterDrop(
-                    estadoSeleccionado: estadoSeleccionado,
-                    onChanged: (nuevoEstado) {
-                      setState(() {
-                        estadoSeleccionado = nuevoEstado;
-                      });
+                  padding: const EdgeInsets.all(16),
+                  child: SearchingBar(
+                    controller: searchController,
+                    theme: theme,
+                  ),
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: usuariosFiltrados.length,
+                    itemBuilder: (context, index) {
+                      final item = usuariosFiltrados[index];
+                      return GestureDetector(
+                        onTap: () => _showPaymentDetails(item),
+                        child: PaymentStateCard(
+                          cliente: item,
+                          estado: item['estado'] ?? 'Desconocido',
+                        ),
+                      );
                     },
                   ),
                 ),
-
-                // Separación entre filtro y lista
-                const SizedBox(height: 12),
-
-                Expanded(
-                  child: membresiasFiltradas.isEmpty
-                      ? const Center(child: Text('No hay resultados'))
-                      : ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          itemCount: membresiasFiltradas.length,
-                          itemBuilder: (context, index) {
-                            final item = membresiasFiltradas[index];
-                            return MemberCardState(
-                              cliente: item['cliente'],
-                              fechaVencimiento: item['fechaVencimiento'],
-                              estado: item['estado'],
-                              monto: (item['monto'] as num).toDouble(),
-                            );
-                          },
-                        ),
-                ),
-              ],
-            );
-          }
-        },
-      ),
-    );
-  }
-}
-
-class FilterDrop extends StatelessWidget {
-  final String? estadoSeleccionado;
-  final ValueChanged<String?> onChanged;
-
-  const FilterDrop({
-    super.key,
-    required this.estadoSeleccionado,
-    required this.onChanged,
-  });
-
-  static const List<String> estados = [
-    'Por Vencer',
-    'Vencido',
-    'Activo',
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    // Valor para "Todos"
-    const todosValor = 'todos';
-
-    return Row(
-      children: [
-        Expanded(
-          flex: 2,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: theme.colorScheme.primary.withOpacity(0.5),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: theme.colorScheme.primary.withOpacity(0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
               ],
             ),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                isExpanded: true,
-                icon: Icon(Icons.filter_list, color: theme.colorScheme.primary),
-                value: estadoSeleccionado ?? todosValor,
-                items: [
-                  const DropdownMenuItem<String>(
-                    value: todosValor,
-                    child: Text('Todos'),
-                  ),
-                  ...estados.map(
-                    (estado) => DropdownMenuItem<String>(
-                      value: estado,
-                      child: Text(
-                        estado,
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                          color: theme.colorScheme.primary,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-                onChanged: (value) {
-                  if (value == todosValor) {
-                    onChanged(null);
-                  } else {
-                    onChanged(value);
-                  }
-                },
-                dropdownColor: theme.cardColor,
-                style: TextStyle(
-                  color: theme.colorScheme.primary,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

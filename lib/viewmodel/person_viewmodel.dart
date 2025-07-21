@@ -15,6 +15,7 @@ class PersonasViewModel extends ChangeNotifier {
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
+  bool _usuariosCargados = false;
 
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
@@ -93,7 +94,6 @@ class PersonasViewModel extends ChangeNotifier {
         _usuarios = [];
         rolUsuario = null;
         usuarioActivoId = null;
-        _isLoading = false;
         notifyListeners();
         return;
       }
@@ -106,14 +106,12 @@ class PersonasViewModel extends ChangeNotifier {
       if (!userDoc.exists || userDoc.data() == null) {
         _usuarios = [];
         rolUsuario = null;
-        _isLoading = false;
         notifyListeners();
         return;
       }
 
       final data = userDoc.data()!;
       rolUsuario = data['tipo'] as String? ?? '';
-
       final codigoGimnasioUsuario = data['codigoGimnasio'] ?? '';
 
       if (codigoGimnasioUsuario.isEmpty) {
@@ -121,6 +119,9 @@ class PersonasViewModel extends ChangeNotifier {
       }
 
       final codigoCorto = _codigoGimnasioCorto(codigoGimnasioUsuario);
+      if (codigoCorto.isEmpty) {
+        throw Exception('Código de gimnasio inválido');
+      }
 
       final gimnasioQuery = await _firestore
           .collection('gimnasios')
@@ -132,23 +133,36 @@ class PersonasViewModel extends ChangeNotifier {
         throw Exception('Gimnasio con código $codigoCorto no encontrado');
       }
 
-      final gimnasioDoc = gimnasioQuery.docs.first;
-      final gimnasioId = gimnasioDoc.id;
+      final gimnasioId = gimnasioQuery.docs.first.id;
 
-      if (rolUsuario == 'Cliente') {
-        _usuarios = [];
-      } else if (rolUsuario == 'Administrador' || rolUsuario == 'Dueño') {
-        _usuarios = await obtenerUsuariosDeGimnasio(gimnasioId);
-      } else {
-        _usuarios = [];
+      switch (rolUsuario) {
+        case 'Administrador':
+        case 'Dueño':
+          _usuarios = await obtenerUsuariosDeGimnasio(gimnasioId);
+          break;
+        default:
+          _usuarios = [];
       }
     } catch (e) {
       _errorMessage = 'Error al cargar usuarios: $e';
       _usuarios = [];
+      debugPrint('[cargarUsuarios] Error: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  Future<void> cargarUsuariosSiNecesario() async {
+    if (_usuariosCargados) return; // ya cargado, no hacer nada
+    await cargarUsuarios();
+    _usuariosCargados = true;
+  }
+
+  Future<void> recargarUsuarios() async {
+    _usuariosCargados = false;
+    await cargarUsuarios();
+    _usuariosCargados = true;
   }
 
   Future<List<Map<String, dynamic>>> obtenerUsuariosDeGimnasio(
@@ -330,6 +344,56 @@ class PersonasViewModel extends ChangeNotifier {
     } catch (e) {
       rethrow;
     }
+  }
+
+  Future<List<Map<String, dynamic>>> obtenerUsuariosConEstado() async {
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+    final FirebaseAuth auth = FirebaseAuth.instance;
+
+    final user = auth.currentUser;
+    if (user == null) return [];
+
+    // Obtener datos del usuario actual
+    final userDoc = await firestore.collection('usuarios').doc(user.uid).get();
+    final userData = userDoc.data();
+    if (userData == null || userData['codigoGimnasio'] == null) return [];
+
+    // Extraer el código del gimnasio (corto)
+    final codigoGimnasio = userData['codigoGimnasio'];
+    final codigoCorto = codigoGimnasio.length >= 8
+        ? codigoGimnasio.substring(0, 8)
+        : codigoGimnasio;
+
+    // Buscar el gimnasio en base al código
+    final gimnasioQuery = await firestore
+        .collection('gimnasios')
+        .where('codigo', isEqualTo: codigoCorto)
+        .limit(1)
+        .get();
+
+    if (gimnasioQuery.docs.isEmpty) return [];
+
+    final gimnasioId = gimnasioQuery.docs.first.id;
+
+    // Buscar usuarios dentro del gimnasio, solo tipo "Cliente"
+    final usuariosSnapshot = await firestore
+        .collection('gimnasios')
+        .doc(gimnasioId)
+        .collection('usuarios')
+        .where('tipo', isEqualTo: 'Cliente')
+        .get();
+
+    // Retornar los campos necesarios
+    return usuariosSnapshot.docs.map((doc) {
+      final data = doc.data();
+      return {
+        'cedula': data['cedula'] ?? '',
+        'nombre': data['nombre'] ?? '',
+        'apellido': data['apellido'] ?? '',
+        'membresia': data['membresia'] ?? '',
+        'estado': data['estado'] ?? '',
+      };
+    }).toList();
   }
 
   Future<List<Map<String, dynamic>>> buscarUsuariosPorCedulaEnGimnasio(
