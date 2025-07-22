@@ -15,10 +15,20 @@ class _NavigationMenuState extends State<NavigationMenu> {
   int _currentIndex = 0;
 
   @override
+  Future<void> precargarImagenesAdministrador(BuildContext context) async {
+    await Future.wait([
+      precacheImage(const AssetImage('assets/images/fondo1.webp'), context),
+      precacheImage(const AssetImage('assets/images/fondo2.webp'), context),
+      precacheImage(const AssetImage('assets/images/fondo3.webp'), context),
+      precacheImage(const AssetImage('assets/images/fondo4.webp'), context),
+    ]);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final List<Widget> screens = [
-      Home(nombreUsuario: widget.nombreUsuario),
-      const Administration(),
+      Home(nombreUsuario: widget.nombreUsuario, isActive: _currentIndex == 0),
+      Administration(isActive: _currentIndex == 1),
       const Preferences(),
     ];
 
@@ -29,7 +39,11 @@ class _NavigationMenuState extends State<NavigationMenu> {
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
-        onDestinationSelected: (index) {
+        onDestinationSelected: (index) async {
+          if (index == 1) {
+            // Precargar antes de cambiar la pantalla
+            await precargarImagenesAdministrador(context);
+          }
           setState(() {
             _currentIndex = index;
           });

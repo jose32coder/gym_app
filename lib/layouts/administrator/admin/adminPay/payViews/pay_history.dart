@@ -23,8 +23,11 @@ class _PayHistoryState extends State<PayHistory> {
   @override
   void initState() {
     super.initState();
-    final payVM = context.read<PayViewModel>();
-    payVM.cargarGimnasioId(); // Esto carga gimnasioId y pagos automáticamente
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final payVM = context.read<PayViewModel>();
+      payVM.cargarGimnasioId();
+    });
 
     searchController.addListener(_filterPayments);
   }

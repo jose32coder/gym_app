@@ -1,3 +1,5 @@
+import 'package:basic_flutter/components/animations.dart';
+import 'package:basic_flutter/layouts/administrator/admin/adminPay/admin_pay.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -18,8 +20,10 @@ import 'package:basic_flutter/viewmodel/pay_viewmodel.dart';
 import 'package:basic_flutter/viewmodel/person_viewmodel.dart';
 
 class Home extends StatefulWidget {
+  final bool isActive;
+
   final String? nombreUsuario;
-  const Home({super.key, this.nombreUsuario});
+  const Home({super.key, this.nombreUsuario, this.isActive = false});
 
   @override
   State<Home> createState() => _HomeState();
@@ -27,8 +31,23 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
+
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+
+  late Animation<double> _fadeAnimationMovimientos;
+  late Animation<Offset> _slideAnimationMovimientos;
+
+  late Animation<double> _fadeAnimation2;
+  late Animation<Offset> _slideAnimation2;
+
+  // Para animaciones del AppBar:
+  late Animation<double> _fadeTitle;
+  late Animation<Offset> _slideTitle;
+
+  late Animation<double> _fadeIcon;
+  late Animation<Offset> _slideIcon;
+
   bool _dataLoaded = false;
 
   @override
@@ -37,36 +56,81 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: 1200),
     );
 
-    _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeIn),
-    );
+    // Tus animaciones originales
+    _fadeAnimation =
+        CustomAnimations.fadeAnimation(_controller, start: 0.0, finish: 1.0);
+    _slideAnimation =
+        CustomAnimations.slideAnimation(_controller, start: 0.0, finish: 1.0);
 
-    _slideAnimation = Tween<Offset>(
-            begin: const Offset(0, 0.1), end: Offset.zero)
-        .animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+    _fadeAnimationMovimientos = CustomAnimations.fadeAnimationMovimientos(
+        _controller,
+        start: 0.0,
+        finish: 1.0);
+    _slideAnimationMovimientos = CustomAnimations.slideAnimationMovimientos(
+        _controller,
+        start: 0.3,
+        finish: 1.0);
+
+    _fadeAnimation2 =
+        CustomAnimations.fadeAnimation2(_controller, start: 0.0, finish: 1.0);
+    _slideAnimation2 =
+        CustomAnimations.slideAnimation2(_controller, start: 0.3, finish: 1.0);
+
+    // Animaciones AppBar
+    _fadeTitle = CustomAnimations.fadeIn(_controller, start: 0.0, finish: 0.5);
+    _slideTitle =
+        CustomAnimations.slideFromLeft(_controller, start: 0.0, finish: 0.5);
+
+    _fadeIcon = CustomAnimations.fadeIn(_controller, start: 0.0, finish: 0.5);
+    _slideIcon =
+        CustomAnimations.slideFromRight(_controller, start: 0.0, finish: 0.5);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _controller.forward();
-      _loadDataOnce(context);
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_dataLoaded) {
+      _loadDataOnce(context);
+      _dataLoaded = true;
+    }
+
+    if (widget.isActive) {
+      _controller.forward(from: 0);
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant Home oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isActive && !oldWidget.isActive) {
+      _controller.forward(from: 0);
+    } else if (!widget.isActive && oldWidget.isActive) {
+      _controller.stop();
+    }
   }
 
   void _loadDataOnce(BuildContext context) {
     if (_dataLoaded) return;
 
-    final payVM = context.read<PayViewModel>();
-    final personasVM = context.read<PersonasViewModel>();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final payVM = context.read<PayViewModel>();
+      final personasVM = context.read<PersonasViewModel>();
 
-    if (payVM.payments.isEmpty) {
-      payVM.cargarGimnasioId();
-    }
+      if (payVM.payments.isEmpty) {
+        payVM.cargarGimnasioId();
+      }
 
-    if (personasVM.usuarios.isEmpty) {
-      personasVM.cargarUsuarios();
-    }
+      if (personasVM.usuarios.isEmpty) {
+        personasVM.cargarUsuarios();
+      }
+    });
 
     _dataLoaded = true;
   }
@@ -80,61 +144,109 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return AnimatedBuilder(
-        animation: _controller,
-        builder: (context, asyncSnapshot) {
-          return Scaffold(
-            appBar: AppBar(
-              title: Text(
-                'Hola, ${widget.nombreUsuario ?? 'Usuario'} 👋',
-                style: TextStyles.boldPrimaryText(context),
-              ),
-              actions: [
-                IconButton(
-                  icon: const FaIcon(FontAwesomeIcons.bell),
-                  onPressed: () {
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.vertical(top: Radius.circular(20)),
-                      ),
-                      builder: (_) => const NotificationModal(),
-                    );
-                  },
+      animation: _controller,
+      builder: (context, _) {
+        return Scaffold(
+          appBar: AppBar(
+            title: FadeTransition(
+              opacity: _fadeTitle,
+              child: SlideTransition(
+                position: _slideTitle,
+                child: Text(
+                  'Hola, ${widget.nombreUsuario ?? 'Usuario'} 👋',
+                  style: TextStyles.boldPrimaryText(context),
                 ),
-                const SizedBox(width: 10),
-              ],
+              ),
             ),
-            body: isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        FadeTransition(
-                          opacity: _fadeAnimation,
-                          child: SlideTransition(
-                            position: _slideAnimation,
-                            child: _buildUltimosClientes(
-                                personasVM, context, isDarkMode),
-                          ),
+            actions: [
+              FadeTransition(
+                opacity: _fadeIcon,
+                child: SlideTransition(
+                  position: _slideIcon,
+                  child: IconButton(
+                    icon: const FaIcon(FontAwesomeIcons.bell),
+                    onPressed: () {
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.vertical(top: Radius.circular(20)),
                         ),
-                        const SizedBox(height: 20),
-                        _buildResumenUsuarios(personasVM, context),
-                        const SizedBox(height: 20),
-                        Text('Últimos movimientos',
-                            style: TextStyles.boldText(context)),
-                        const SizedBox(height: 10),
-                        HistoryOperations(payments: payVM.payments),
-                      ],
-                    ),
+                        builder: (_) => const NotificationModal(),
+                      );
+                    },
                   ),
-          );
-        });
+                ),
+              ),
+              const SizedBox(width: 10),
+            ],
+          ),
+          body: isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : SingleChildScrollView(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: SlideTransition(
+                          position: _slideAnimation,
+                          child: _buildUltimosClientes(
+                              personasVM, context, isDarkMode),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      FadeTransition(
+                        opacity: _fadeAnimationMovimientos,
+                        child: SlideTransition(
+                          position: _slideAnimationMovimientos,
+                          child: _buildResumenUsuarios(personasVM, context),
+                        ),
+                      ),
+                      FadeTransition(
+                        opacity: _fadeAnimation2,
+                        child: SlideTransition(
+                            position: _slideAnimation2,
+                            child: _buildUltimosMovimientos(payVM, context)),
+                      ),
+                    ],
+                  ),
+                ),
+        );
+      },
+    );
   }
+}
+
+Widget _buildUltimosMovimientos(PayViewModel payVM, BuildContext context) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text('Últimos movimientos', style: TextStyles.boldText(context)),
+          TextButton(
+            onPressed: () {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const AdminPay(initialIndex: 2)),
+                );
+              });
+            },
+            child: const Text('Ver todos'),
+          ),
+        ],
+      ),
+      const SizedBox(height: 10),
+      HistoryOperations(payments: payVM.payments),
+    ],
+  );
 }
 
 Widget _buildUltimosClientes(
@@ -206,10 +318,7 @@ Widget _buildResumenUsuarios(
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Text(
-        'Estado de usuarios',
-        style: TextStyles.boldText(context),
-      ),
+      Text('Estado de usuarios', style: TextStyles.boldText(context)),
       const SizedBox(height: 10),
       GridView.count(
         crossAxisCount: 2,
