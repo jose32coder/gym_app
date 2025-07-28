@@ -179,7 +179,6 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
             ],
           ),
           body: isLoading

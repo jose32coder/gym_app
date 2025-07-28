@@ -29,7 +29,7 @@ class _NavigationMenuState extends State<NavigationMenu> {
     final List<Widget> screens = [
       Home(nombreUsuario: widget.nombreUsuario, isActive: _currentIndex == 0),
       Administration(isActive: _currentIndex == 1),
-      const Preferences(),
+      Preferences(isActive: _currentIndex == 2),
     ];
 
     return Scaffold(

@@ -53,7 +53,7 @@ class CustomAnimations {
     );
   }
 
-  // Animaciones de fade + slide específicas que tenías en tu código
+  // Animaciones de fade + slide customizados
 
   static Animation<double> fadeAnimation(AnimationController controller,
       {double start = 0, double finish = 0.4}) {

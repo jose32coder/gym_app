@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:basic_flutter/components/notification_modal.dart';
 import 'package:basic_flutter/layouts/administrator/admin/adminMemberAndPromos/admin_mainscreen.dart';
-import 'package:basic_flutter/layouts/administrator/admin/widgets/admin_cards.dart';
+import 'package:basic_flutter/layouts/administrator/admin/widgets/admin_card_navigation.dart';
 import 'package:basic_flutter/components/text_style.dart';
 import 'package:basic_flutter/layouts/administrator/admin/adminReport/admin_report.dart';
 import 'package:basic_flutter/layouts/administrator/admin/adminPay/admin_pay.dart';
@@ -31,44 +31,16 @@ class _AdministrationState extends State<Administration>
   late Animation<double> _fadeIcon;
   late Animation<Offset> _slideIcon;
 
+  bool _imagesPrecached = false;
+  late Future<void> _precacheImagesFuture;
+
   final AssetImage fondo1 = const AssetImage('assets/images/fondo1.webp');
   final AssetImage fondo2 = const AssetImage('assets/images/fondo2.webp');
   final AssetImage fondo3 = const AssetImage('assets/images/fondo3.webp');
   final AssetImage fondo4 = const AssetImage('assets/images/fondo4.webp');
 
   final int _itemCount = 4;
-  bool _imagesPrecached = false;
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    routeObserver.subscribe(this, ModalRoute.of(context)!);
-
-    Future.wait([
-      precacheImage(fondo1, context),
-      precacheImage(fondo2, context),
-      precacheImage(fondo3, context),
-      precacheImage(fondo4, context),
-    ]).then((_) {
-      setState(() {
-        _imagesPrecached = true;
-      });
-
-      // Inicia animaciones solo después de precarga
-      if (widget.isActive) {
-        _controller.forward(from: 0);
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    routeObserver.unsubscribe(this);
-    _controller.dispose();
-    super.dispose();
-  }
-
-  // Aquí empiezan los callbacks de RouteAware:
   @override
   void initState() {
     super.initState();
@@ -83,14 +55,32 @@ class _AdministrationState extends State<Administration>
     _fadeAnimations =
         CustomAnimations.generateFadeAnimations(_controller, _itemCount);
 
-    // Animaciones AppBar
     _fadeTitle = CustomAnimations.fadeIn(_controller, start: 0.0, finish: 0.5);
     _slideTitle =
         CustomAnimations.slideFromLeft(_controller, start: 0.0, finish: 0.5);
-
     _fadeIcon = CustomAnimations.fadeIn(_controller, start: 0.0, finish: 0.5);
     _slideIcon =
         CustomAnimations.slideFromRight(_controller, start: 0.0, finish: 0.5);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeObserver.subscribe(this, ModalRoute.of(context)!);
+
+    if (!_imagesPrecached) {
+      _precacheImagesFuture = _precacheAllImages();
+      _imagesPrecached = true;
+    }
+  }
+
+  Future<void> _precacheAllImages() async {
+    await Future.wait([
+      precacheImage(fondo1, context),
+      precacheImage(fondo2, context),
+      precacheImage(fondo3, context),
+      precacheImage(fondo4, context),
+    ]);
   }
 
   @override
@@ -113,118 +103,109 @@ class _AdministrationState extends State<Administration>
     );
   }
 
+  Widget _buildContent() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.vertical,
+      child: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: Column(
+          children: [
+            _buildAnimatedCard(
+              index: 0,
+              child: AdminCardNavigation(
+                title: 'Personas',
+                subtitle: 'Listado de personas del gimnasio',
+                imagePath: 'assets/images/fondo1.webp',
+                destinationBuilder: (context) => const AdminPer(),
+              ),
+            ),
+            const SizedBox(height: 10),
+            _buildAnimatedCard(
+              index: 1,
+              child: AdminCardNavigation(
+                title: 'Membresías',
+                subtitle: 'Listado de membresías del gimnasio',
+                imagePath: 'assets/images/fondo2.webp',
+                destinationBuilder: (context) => const AdminMainScreen(),
+              ),
+            ),
+            const SizedBox(height: 10),
+            _buildAnimatedCard(
+              index: 2,
+              child: AdminCardNavigation(
+                title: 'Pagos',
+                subtitle: 'Administración de pagos generales',
+                imagePath: 'assets/images/fondo4.webp',
+                destinationBuilder: (context) => const AdminPay(),
+              ),
+            ),
+            const SizedBox(height: 10),
+            _buildAnimatedCard(
+              index: 3,
+              child: AdminCardNavigation(
+                title: 'Reportes',
+                subtitle: 'Listado de reportes generales',
+                imagePath: 'assets/images/fondo3.webp',
+                destinationBuilder: (context) => const AdminReport(),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (!_imagesPrecached) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    return Scaffold(
-      appBar: AppBar(
-        title: FadeTransition(
-          opacity: _fadeTitle,
-          child: SlideTransition(
-            position: _slideTitle,
-            child: Text(
-              'Administración',
-              style: TextStyles.boldPrimaryText(context),
-            ),
-          ),
-        ),
-        actions: [
-          FadeTransition(
-            opacity: _fadeIcon,
-            child: SlideTransition(
-              position: _slideIcon,
-              child: IconButton(
-                icon: const FaIcon(FontAwesomeIcons.bell),
-                onPressed: () {
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    shape: const RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.vertical(top: Radius.circular(20)),
+    return FutureBuilder<void>(
+      future: _precacheImagesFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          if (widget.isActive) _controller.forward(from: 0);
+          return Scaffold(
+            appBar: AppBar(
+              title: FadeTransition(
+                opacity: _fadeTitle,
+                child: SlideTransition(
+                  position: _slideTitle,
+                  child: Text(
+                    'Administración',
+                    style: TextStyles.boldPrimaryText(context),
+                  ),
+                ),
+              ),
+              actions: [
+                FadeTransition(
+                  opacity: _fadeIcon,
+                  child: SlideTransition(
+                    position: _slideIcon,
+                    child: IconButton(
+                      icon: const FaIcon(FontAwesomeIcons.bell),
+                      onPressed: () {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.vertical(top: Radius.circular(20)),
+                          ),
+                          builder: (_) => const NotificationModal(),
+                        );
+                      },
                     ),
-                    builder: (_) => const NotificationModal(),
-                  );
-                },
-              ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+              ],
             ),
-          ),
-          const SizedBox(width: 10),
-        ],
-      ),
-      body: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-        child: Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: Column(
-            children: [
-              _buildAnimatedCard(
-                index: 0,
-                child: AdminCard(
-                  title: 'Personas',
-                  subtitle: 'Listado de personas del gimnasio',
-                  imagePath: 'assets/images/fondo1.webp',
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const AdminPer()),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 10),
-              _buildAnimatedCard(
-                index: 1,
-                child: AdminCard(
-                  title: 'Membresías',
-                  subtitle: 'Listado de membresías del gimnasio',
-                  imagePath: 'assets/images/fondo2.webp',
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const AdminMainScreen()),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 10),
-              _buildAnimatedCard(
-                index: 2,
-                child: AdminCard(
-                  title: 'Pagos',
-                  subtitle: 'Administración de pagos generales',
-                  imagePath: 'assets/images/fondo4.webp',
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const AdminPay()),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 10),
-              _buildAnimatedCard(
-                index: 3,
-                child: AdminCard(
-                  title: 'Reportes',
-                  subtitle: 'Listado de reportes generales',
-                  imagePath: 'assets/images/fondo3.webp',
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const AdminReport()),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+            body: _buildContent(),
+          );
+        } else {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+      },
     );
   }
 }

@@ -1,5 +1,7 @@
+import 'package:basic_flutter/components/animations.dart';
 import 'package:basic_flutter/components/notification_modal.dart';
 import 'package:basic_flutter/components/text_style.dart';
+import 'package:basic_flutter/layouts/administrator/preferences/preferencesView/aboutViews/pref_about_app.dart';
 import 'package:basic_flutter/layouts/administrator/preferences/preferencesView/createCode/create_code.dart';
 import 'package:basic_flutter/layouts/administrator/preferences/preferencesView/pref_account_and_data.dart';
 import 'package:basic_flutter/layouts/administrator/preferences/preferencesView/pref_notifications.dart';
@@ -12,14 +14,64 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 
 class Preferences extends StatefulWidget {
-  const Preferences({super.key});
+  final bool isActive;
+
+  const Preferences({super.key, this.isActive = false});
 
   @override
   State<Preferences> createState() => _PreferencesState();
 }
 
-class _PreferencesState extends State<Preferences> {
+class _PreferencesState extends State<Preferences>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+
+  late Animation<double> _fadeTitle;
+  late Animation<Offset> _slideTitle;
+
+  late Animation<double> _fadeIcon;
+  late Animation<Offset> _slideIcon;
+
   bool isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+
+    // Asegura que la animación del título y el ícono estén escalonadas
+    _fadeTitle = CustomAnimations.fadeIn(_controller, start: 0.0, finish: 0.5);
+    _slideTitle =
+        CustomAnimations.slideFromLeft(_controller, start: 0.0, finish: 0.5);
+
+    _fadeIcon = CustomAnimations.fadeIn(_controller, start: 0.0, finish: 0.5);
+    _slideIcon =
+        CustomAnimations.slideFromRight(_controller, start: 0.0, finish: 0.5);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _controller.forward(); // Espera a que el frame inicial se construya
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant Preferences oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isActive && !oldWidget.isActive) {
+      _controller.forward(from: 0);
+    } else if (!widget.isActive && oldWidget.isActive) {
+      _controller.stop();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose(); // Liberar recursos
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,29 +83,54 @@ class _PreferencesState extends State<Preferences> {
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 45,
-        title: Text(
-          'Preferencias',
-          style: TextStyles.boldPrimaryText(context),
+        title: FadeTransition(
+          opacity: _fadeTitle,
+          child: SlideTransition(
+            position: _slideTitle,
+            child: Text(
+              'Preferencias',
+              style: TextStyles.boldPrimaryText(context),
+            ),
+          ),
         ),
         centerTitle: false,
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 10),
-            child: IconButton(
-              icon: const FaIcon(FontAwesomeIcons.bell),
-              onPressed: () {
-                showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  shape: const RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.vertical(top: Radius.circular(20)),
+          FadeTransition(
+            opacity: _fadeIcon,
+            child: SlideTransition(
+              position: _slideIcon,
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const FaIcon(FontAwesomeIcons.questionCircle),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const PrefAboutApp(),
+                        ),
+                      );
+                    },
                   ),
-                  builder: (context) => const NotificationModal(),
-                );
-              },
+                  IconButton(
+                    icon: const FaIcon(FontAwesomeIcons.bell),
+                    onPressed: () {
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.vertical(top: Radius.circular(20)),
+                        ),
+                        builder: (_) => const NotificationModal(),
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
-          )
+          ),
+          const SizedBox(width: 10),
         ],
       ),
       body: LayoutBuilder(
